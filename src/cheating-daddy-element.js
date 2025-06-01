@@ -831,11 +831,11 @@ class CheatingDaddyApp extends LitElement {
                 <div class="option-group">
                     <span class="option-label">Audio Input</span>
                     <div class="description">
-                        ${cheddar.isMacOS
-                            ? '<strong>macOS:</strong> Uses SystemAudioDump for system audio capture'
+                        ${cheddar.isMacOS 
+                            ? html`<strong>macOS:</strong> Uses SystemAudioDump for system audio capture`
                             : cheddar.isLinux
-                              ? '<strong>Linux:</strong> Uses microphone input'
-                              : '<strong>Windows:</strong> Uses loopback audio capture'}<br />
+                              ? html`<strong>Linux:</strong> Uses microphone input`
+                              : html`<strong>Windows:</strong> Uses loopback audio capture`}<br />
                         The AI listens to conversations and provides contextual assistance based on what it hears.
                     </div>
                 </div>
