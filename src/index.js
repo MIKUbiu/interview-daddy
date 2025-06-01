@@ -106,9 +106,13 @@ function createWindow() {
         });
     });
 
-    const closeShortcut = isMac ? 'Cmd+\\' : 'Ctrl+\\';
-    globalShortcut.register(closeShortcut, () => {
-        mainWindow.close();
+    const toggleVisibilityShortcut = isMac ? 'Cmd+\\' : 'Ctrl+\\';
+    globalShortcut.register(toggleVisibilityShortcut, () => {
+        if (mainWindow.isVisible()) {
+            mainWindow.hide();
+        } else {
+            mainWindow.show();
+        }
     });
 
     const toggleShortcut = isMac ? 'Cmd+M' : 'Ctrl+M';
