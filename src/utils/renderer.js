@@ -60,12 +60,12 @@ ipcRenderer.on('update-status', (event, status) => {
     cheddar.e().setStatus(status);
 });
 
-// Listen for responses
-ipcRenderer.on('update-response', (event, response) => {
-    console.log('Gemini response:', response);
-    cheddar.e().setResponse(response);
-    // You can add UI elements to display the response if needed
-});
+// Listen for responses - REMOVED: This is handled in CheatingDaddyApp.js to avoid duplicates
+// ipcRenderer.on('update-response', (event, response) => {
+//     console.log('Gemini response:', response);
+//     cheddar.e().setResponse(response);
+//     // You can add UI elements to display the response if needed
+// });
 
 async function startCapture(screenshotIntervalSeconds = 1, imageQuality = 'medium') {
     try {
