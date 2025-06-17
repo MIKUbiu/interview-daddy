@@ -4,42 +4,42 @@ export class CustomizeView extends LitElement {
     static styles = css`
         :host {
             display: block;
-            padding: 20px;
+            padding: 16px;
             margin: 0 auto;
         }
 
         .settings-container {
             display: grid;
-            gap: 24px;
+            gap: 16px;
         }
 
         .settings-section {
             background: var(--card-background, rgba(255, 255, 255, 0.05));
             border: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
-            border-radius: 12px;
-            padding: 24px;
+            border-radius: 6px;
+            padding: 16px;
             backdrop-filter: blur(10px);
         }
 
         .section-title {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            font-size: 18px;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--text-color);
         }
 
         .form-grid {
             display: grid;
-            gap: 20px;
+            gap: 12px;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 12px;
             align-items: start;
         }
 
@@ -52,7 +52,7 @@ export class CustomizeView extends LitElement {
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .form-group.full-width {
@@ -61,7 +61,7 @@ export class CustomizeView extends LitElement {
 
         .form-label {
             font-weight: 500;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--label-color, rgba(255, 255, 255, 0.9));
             display: flex;
             align-items: center;
@@ -69,27 +69,27 @@ export class CustomizeView extends LitElement {
         }
 
         .form-description {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--description-color, rgba(255, 255, 255, 0.6));
-            line-height: 1.4;
-            margin-top: 4px;
+            line-height: 1.3;
+            margin-top: 2px;
         }
 
         .form-control {
             background: var(--input-background, rgba(0, 0, 0, 0.3));
             color: var(--text-color);
             border: 1px solid var(--input-border, rgba(255, 255, 255, 0.2));
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
             transition: all 0.2s ease;
-            min-height: 20px;
+            min-height: 16px;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--focus-border-color, #007AFF);
-            box-shadow: 0 0 0 3px var(--focus-shadow, rgba(0, 122, 255, 0.1));
+            box-shadow: 0 0 0 2px var(--focus-shadow, rgba(0, 122, 255, 0.1));
             background: var(--input-focus-background, rgba(0, 0, 0, 0.4));
         }
 
@@ -101,16 +101,16 @@ export class CustomizeView extends LitElement {
             cursor: pointer;
             appearance: none;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 12px center;
+            background-position: right 8px center;
             background-repeat: no-repeat;
-            background-size: 16px;
-            padding-right: 40px;
+            background-size: 14px;
+            padding-right: 28px;
         }
 
         textarea.form-control {
             resize: vertical;
-            min-height: 100px;
-            line-height: 1.5;
+            min-height: 80px;
+            line-height: 1.4;
             font-family: inherit;
         }
 
@@ -121,20 +121,18 @@ export class CustomizeView extends LitElement {
         .profile-option {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
         }
-
-
 
         .current-selection {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
+            gap: 4px;
+            font-size: 11px;
             color: var(--success-color, #28a745);
             background: var(--success-background, rgba(40, 167, 69, 0.1));
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 2px 6px;
+            border-radius: 3px;
             font-weight: 500;
         }
 
@@ -159,9 +157,9 @@ export class CustomizeView extends LitElement {
             background: var(--button-background, rgba(255, 255, 255, 0.1));
             color: var(--text-color);
             border: 1px solid var(--button-border, rgba(255, 255, 255, 0.2));
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -179,12 +177,12 @@ export class CustomizeView extends LitElement {
         .keybinds-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 12px;
+            margin-top: 8px;
         }
 
         .keybinds-table th,
         .keybinds-table td {
-            padding: 12px 16px;
+            padding: 8px 12px;
             text-align: left;
             border-bottom: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
         }
@@ -192,7 +190,7 @@ export class CustomizeView extends LitElement {
         .keybinds-table th {
             background: var(--table-header-background, rgba(255, 255, 255, 0.05));
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--label-color, rgba(255, 255, 255, 0.9));
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -205,18 +203,20 @@ export class CustomizeView extends LitElement {
         .keybinds-table .action-name {
             font-weight: 500;
             color: var(--text-color);
+            font-size: 13px;
         }
 
         .keybinds-table .action-description {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--description-color, rgba(255, 255, 255, 0.6));
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .keybinds-table .keybind-input {
-            min-width: 140px;
-            padding: 8px 12px;
+            min-width: 120px;
+            padding: 6px 10px;
             margin: 0;
+            font-size: 12px;
         }
 
         .keybinds-table tr:hover {
@@ -232,20 +232,20 @@ export class CustomizeView extends LitElement {
         }
 
         .table-reset-row td {
-            padding-top: 20px;
-            padding-bottom: 16px;
+            padding-top: 12px;
+            padding-bottom: 10px;
             border-bottom: none;
         }
 
         .settings-note {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--note-color, rgba(255, 255, 255, 0.5));
             font-style: italic;
             text-align: center;
-            margin-top: 20px;
-            padding: 12px;
+            margin-top: 12px;
+            padding: 8px;
             background: var(--note-background, rgba(255, 255, 255, 0.02));
-            border-radius: 8px;
+            border-radius: 4px;
             border: 1px dashed var(--note-border, rgba(255, 255, 255, 0.1));
         }
     `;
