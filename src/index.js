@@ -148,6 +148,18 @@ function createWindow() {
         }
     });
 
+    const manualScreenshotShortcut = isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S';
+    globalShortcut.register(manualScreenshotShortcut, () => {
+        console.log('Manual screenshot shortcut triggered');
+        mainWindow.webContents.executeJavaScript(`
+            if (window.captureManualScreenshot) {
+                window.captureManualScreenshot();
+            } else {
+                console.log('Manual screenshot function not available');
+            }
+        `);
+    });
+
     ipcMain.on('view-changed', (event, view) => {
         if (view !== 'assistant') {
             mainWindow.setIgnoreMouseEvents(false);

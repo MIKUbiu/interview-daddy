@@ -78,7 +78,7 @@ export class CustomizeView extends LitElement {
         super();
         this.selectedProfile = 'interview';
         this.selectedLanguage = 'en-US';
-        this.selectedScreenshotInterval = '1';
+        this.selectedScreenshotInterval = '5';
         this.selectedImageQuality = 'medium';
         this.onProfileChange = () => {};
         this.onLanguageChange = () => {};
@@ -238,11 +238,13 @@ export class CustomizeView extends LitElement {
                 <div class="option-group">
                     <label class="option-label">Screenshot Interval</label>
                     <select .value=${this.selectedScreenshotInterval} @change=${this.handleScreenshotIntervalSelect}>
-                        <option value="1" ?selected=${this.selectedScreenshotInterval === '1'}>Fast (1 second)</option>
-                        <option value="3" ?selected=${this.selectedScreenshotInterval === '3'}>Medium (3 seconds)</option>
-                        <option value="5" ?selected=${this.selectedScreenshotInterval === '5'}>Slow (5 seconds)</option>
+                        <option value="manual" ?selected=${this.selectedScreenshotInterval === 'manual'}>Manual (On demand)</option>
+                        <option value="1" ?selected=${this.selectedScreenshotInterval === '1'}>1 second</option>
+                        <option value="2" ?selected=${this.selectedScreenshotInterval === '2'}>2 seconds</option>
+                        <option value="5" ?selected=${this.selectedScreenshotInterval === '5'}>5 seconds</option>
+                        <option value="10" ?selected=${this.selectedScreenshotInterval === '10'}>10 seconds</option>
                     </select>
-                    <div class="description">Frequency of screen captures sent to the AI. Slower intervals use fewer tokens.</div>
+                    <div class="description">Frequency of screen captures sent to the AI. Manual mode requires pressing a key to capture.</div>
                 </div>
 
                 <div class="option-group">

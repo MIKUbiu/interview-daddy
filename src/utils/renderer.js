@@ -14,6 +14,7 @@ const BUFFER_SIZE = 4096; // Increased buffer size for smoother audio
 let hiddenVideo = null;
 let offscreenCanvas = null;
 let offscreenContext = null;
+let currentImageQuality = 'medium'; // Store current image quality for manual screenshots
 
 const isLinux = process.platform === 'linux';
 const isMacOS = process.platform === 'darwin';
@@ -67,7 +68,10 @@ ipcRenderer.on('update-status', (event, status) => {
 //     // You can add UI elements to display the response if needed
 // });
 
-async function startCapture(screenshotIntervalSeconds = 1, imageQuality = 'medium') {
+async function startCapture(screenshotIntervalSeconds = 5, imageQuality = 'medium') {
+    // Store the image quality for manual screenshots
+    currentImageQuality = imageQuality;
+    
     try {
         if (isMacOS) {
             // On macOS, use SystemAudioDump for audio and getDisplayMedia for screen
@@ -154,12 +158,17 @@ async function startCapture(screenshotIntervalSeconds = 1, imageQuality = 'mediu
             videoTrack: mediaStream.getVideoTracks()[0]?.getSettings(),
         });
 
-        // Start capturing screenshots
-        const intervalMilliseconds = screenshotIntervalSeconds * 1000;
-        screenshotInterval = setInterval(() => captureScreenshot(imageQuality), intervalMilliseconds);
+        // Start capturing screenshots - check if manual mode
+        if (screenshotIntervalSeconds === 'manual' || screenshotIntervalSeconds === 'Manual') {
+            console.log('Manual mode enabled - screenshots will be captured on demand only');
+            // Don't start automatic capture in manual mode
+        } else {
+            const intervalMilliseconds = parseInt(screenshotIntervalSeconds) * 1000;
+            screenshotInterval = setInterval(() => captureScreenshot(imageQuality), intervalMilliseconds);
 
-        // Capture first screenshot immediately
-        setTimeout(() => captureScreenshot(imageQuality), 100);
+            // Capture first screenshot immediately
+            setTimeout(() => captureScreenshot(imageQuality), 100);
+        }
     } catch (err) {
         console.error('Error starting capture:', err);
         cheddar.e().setStatus('error');
@@ -318,6 +327,15 @@ async function captureScreenshot(imageQuality = 'medium') {
         qualityValue
     );
 }
+
+async function captureManualScreenshot(imageQuality = null) {
+    console.log('Manual screenshot triggered');
+    const quality = imageQuality || currentImageQuality;
+    await captureScreenshot(quality);
+}
+
+// Expose functions to global scope for external access
+window.captureManualScreenshot = captureManualScreenshot;
 
 function stopCapture() {
     if (screenshotInterval) {

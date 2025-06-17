@@ -111,7 +111,7 @@ export class CheatingDaddyApp extends LitElement {
         this.sessionActive = false;
         this.selectedProfile = localStorage.getItem('selectedProfile') || 'interview';
         this.selectedLanguage = localStorage.getItem('selectedLanguage') || 'en-US';
-        this.selectedScreenshotInterval = localStorage.getItem('selectedScreenshotInterval') || '1';
+        this.selectedScreenshotInterval = localStorage.getItem('selectedScreenshotInterval') || '5';
         this.selectedImageQuality = localStorage.getItem('selectedImageQuality') || 'medium';
         this.responses = [];
         this.currentResponseIndex = -1;
@@ -208,7 +208,8 @@ export class CheatingDaddyApp extends LitElement {
     async handleStart() {
         if (window.cheddar) {
             await window.cheddar.initializeGemini(this.selectedProfile, this.selectedLanguage);
-            window.cheddar.startCapture(parseInt(this.selectedScreenshotInterval, 10), this.selectedImageQuality);
+            // Pass the screenshot interval as string (including 'manual' option)
+            window.cheddar.startCapture(this.selectedScreenshotInterval, this.selectedImageQuality);
         }
         this.responses = [];
         this.currentResponseIndex = -1;
