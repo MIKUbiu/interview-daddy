@@ -138,6 +138,105 @@ export class CustomizeView extends LitElement {
             font-weight: 500;
         }
 
+        .keybind-input {
+            cursor: pointer;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .keybind-input:focus {
+            cursor: text;
+            background: var(--input-focus-background, rgba(0, 122, 255, 0.1));
+        }
+
+        .keybind-input::placeholder {
+            color: var(--placeholder-color, rgba(255, 255, 255, 0.4));
+            font-style: italic;
+        }
+
+        .reset-keybinds-button {
+            background: var(--button-background, rgba(255, 255, 255, 0.1));
+            color: var(--text-color);
+            border: 1px solid var(--button-border, rgba(255, 255, 255, 0.2));
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reset-keybinds-button:hover {
+            background: var(--button-hover-background, rgba(255, 255, 255, 0.15));
+            border-color: var(--button-hover-border, rgba(255, 255, 255, 0.3));
+        }
+
+        .reset-keybinds-button:active {
+            transform: translateY(1px);
+        }
+
+        .keybinds-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        .keybinds-table th,
+        .keybinds-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+        }
+
+        .keybinds-table th {
+            background: var(--table-header-background, rgba(255, 255, 255, 0.05));
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--label-color, rgba(255, 255, 255, 0.9));
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .keybinds-table td {
+            vertical-align: middle;
+        }
+
+        .keybinds-table .action-name {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .keybinds-table .action-description {
+            font-size: 12px;
+            color: var(--description-color, rgba(255, 255, 255, 0.6));
+            margin-top: 2px;
+        }
+
+        .keybinds-table .keybind-input {
+            min-width: 140px;
+            padding: 8px 12px;
+            margin: 0;
+        }
+
+        .keybinds-table tr:hover {
+            background: var(--table-row-hover, rgba(255, 255, 255, 0.02));
+        }
+
+        .keybinds-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-reset-row {
+            border-top: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+        }
+
+        .table-reset-row td {
+            padding-top: 20px;
+            padding-bottom: 16px;
+            border-bottom: none;
+        }
+
         .settings-note {
             font-size: 12px;
             color: var(--note-color, rgba(255, 255, 255, 0.5));
@@ -156,6 +255,7 @@ export class CustomizeView extends LitElement {
         selectedLanguage: { type: String },
         selectedScreenshotInterval: { type: String },
         selectedImageQuality: { type: String },
+        keybinds: { type: Object },
         onProfileChange: { type: Function },
         onLanguageChange: { type: Function },
         onScreenshotIntervalChange: { type: Function },
@@ -168,10 +268,12 @@ export class CustomizeView extends LitElement {
         this.selectedLanguage = 'en-US';
         this.selectedScreenshotInterval = '5';
         this.selectedImageQuality = 'medium';
+        this.keybinds = this.getDefaultKeybinds();
         this.onProfileChange = () => {};
         this.onLanguageChange = () => {};
         this.onScreenshotIntervalChange = () => {};
         this.onImageQualityChange = () => {};
+        this.loadKeybinds();
     }
 
     getProfiles() {
@@ -275,6 +377,177 @@ export class CustomizeView extends LitElement {
 
     handleCustomPromptInput(e) {
         localStorage.setItem('customPrompt', e.target.value);
+    }
+
+    getDefaultKeybinds() {
+        const isMac = window.cheddar?.isMacOS || navigator.platform.includes('Mac');
+        return {
+            moveUp: isMac ? 'Alt+Up' : 'Ctrl+Up',
+            moveDown: isMac ? 'Alt+Down' : 'Ctrl+Down',
+            moveLeft: isMac ? 'Alt+Left' : 'Ctrl+Left',
+            moveRight: isMac ? 'Alt+Right' : 'Ctrl+Right',
+            toggleVisibility: isMac ? 'Cmd+\\' : 'Ctrl+\\',
+            toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
+            nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
+            manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S'
+        };
+    }
+
+    loadKeybinds() {
+        const savedKeybinds = localStorage.getItem('customKeybinds');
+        if (savedKeybinds) {
+            try {
+                this.keybinds = { ...this.getDefaultKeybinds(), ...JSON.parse(savedKeybinds) };
+            } catch (e) {
+                console.error('Failed to parse saved keybinds:', e);
+                this.keybinds = this.getDefaultKeybinds();
+            }
+        }
+    }
+
+    saveKeybinds() {
+        localStorage.setItem('customKeybinds', JSON.stringify(this.keybinds));
+        // Send to main process to update global shortcuts
+        if (window.require) {
+            const { ipcRenderer } = window.require('electron');
+            ipcRenderer.send('update-keybinds', this.keybinds);
+        }
+    }
+
+    handleKeybindChange(action, value) {
+        this.keybinds = { ...this.keybinds, [action]: value };
+        this.saveKeybinds();
+        this.requestUpdate();
+    }
+
+    resetKeybinds() {
+        this.keybinds = this.getDefaultKeybinds();
+        localStorage.removeItem('customKeybinds');
+        this.requestUpdate();
+        if (window.require) {
+            const { ipcRenderer } = window.require('electron');
+            ipcRenderer.send('update-keybinds', this.keybinds);
+        }
+    }
+
+    getKeybindActions() {
+        return [
+            {
+                key: 'moveUp',
+                name: 'Move Window Up',
+                description: 'Move the application window up'
+            },
+            {
+                key: 'moveDown',
+                name: 'Move Window Down',
+                description: 'Move the application window down'
+            },
+            {
+                key: 'moveLeft',
+                name: 'Move Window Left',
+                description: 'Move the application window left'
+            },
+            {
+                key: 'moveRight',
+                name: 'Move Window Right',
+                description: 'Move the application window right'
+            },
+            {
+                key: 'toggleVisibility',
+                name: 'Toggle Window Visibility',
+                description: 'Show/hide the application window'
+            },
+            {
+                key: 'toggleClickThrough',
+                name: 'Toggle Click-through Mode',
+                description: 'Enable/disable click-through functionality'
+            },
+            {
+                key: 'nextStep',
+                name: 'Ask Next Step',
+                description: 'Ask AI for the next step suggestion'
+            },
+            {
+                key: 'manualScreenshot',
+                name: 'Manual Screenshot',
+                description: 'Take a manual screenshot for AI analysis'
+            }
+        ];
+    }
+
+    handleKeybindFocus(e) {
+        e.target.placeholder = 'Press key combination...';
+        e.target.select();
+    }
+
+    handleKeybindInput(e) {
+        e.preventDefault();
+        
+        const modifiers = [];
+        const keys = [];
+        
+        // Check modifiers
+        if (e.ctrlKey) modifiers.push('Ctrl');
+        if (e.metaKey) modifiers.push('Cmd');
+        if (e.altKey) modifiers.push('Alt');
+        if (e.shiftKey) modifiers.push('Shift');
+        
+        // Get the main key
+        let mainKey = e.key;
+        
+        // Handle special keys
+        switch (e.code) {
+            case 'ArrowUp':
+                mainKey = 'Up';
+                break;
+            case 'ArrowDown':
+                mainKey = 'Down';
+                break;
+            case 'ArrowLeft':
+                mainKey = 'Left';
+                break;
+            case 'ArrowRight':
+                mainKey = 'Right';
+                break;
+            case 'Enter':
+                mainKey = 'Enter';
+                break;
+            case 'Space':
+                mainKey = 'Space';
+                break;
+            case 'Backslash':
+                mainKey = '\\';
+                break;
+            case 'KeyS':
+                if (e.shiftKey) mainKey = 'S';
+                break;
+            case 'KeyM':
+                mainKey = 'M';
+                break;
+            default:
+                if (e.key.length === 1) {
+                    mainKey = e.key.toUpperCase();
+                }
+                break;
+        }
+        
+        // Skip if only modifier keys are pressed
+        if (['Control', 'Meta', 'Alt', 'Shift'].includes(e.key)) {
+            return;
+        }
+        
+        // Construct keybind string
+        const keybind = [...modifiers, mainKey].join('+');
+        
+        // Get the action from the input's data attribute
+        const action = e.target.dataset.action;
+        
+        // Update the keybind
+        this.handleKeybindChange(action, keybind);
+        
+        // Update the input value
+        e.target.value = keybind;
+        e.target.blur();
     }
 
     render() {
@@ -398,6 +671,54 @@ export class CustomizeView extends LitElement {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Keyboard Shortcuts Section -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <span>Keyboard Shortcuts</span>
+                    </div>
+                    
+                    <table class="keybinds-table">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Shortcut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${this.getKeybindActions().map(action => html`
+                                <tr>
+                                    <td>
+                                        <div class="action-name">${action.name}</div>
+                                        <div class="action-description">${action.description}</div>
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="text"
+                                            class="form-control keybind-input"
+                                            .value=${this.keybinds[action.key]}
+                                            placeholder="Press keys..."
+                                            data-action=${action.key}
+                                            @keydown=${this.handleKeybindInput}
+                                            @focus=${this.handleKeybindFocus}
+                                            readonly
+                                        />
+                                    </td>
+                                </tr>
+                            `)}
+                            <tr class="table-reset-row">
+                                <td colspan="2">
+                                    <button class="reset-keybinds-button" @click=${this.resetKeybinds}>
+                                        Reset to Defaults
+                                    </button>
+                                    <div class="form-description" style="margin-top: 8px;">
+                                        Restore all keyboard shortcuts to their default values
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <div class="settings-note">

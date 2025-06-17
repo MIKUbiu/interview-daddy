@@ -74,91 +74,32 @@ function createWindow() {
 
     mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width, height } = primaryDisplay.workAreaSize;
-    const moveIncrement = Math.floor(Math.min(width, height) * 0.15);
-
-    const isMac = process.platform === 'darwin';
-    const modifier = isMac ? 'Alt' : 'Ctrl';
-    const shortcuts = [`${modifier}+Up`, `${modifier}+Down`, `${modifier}+Left`, `${modifier}+Right`];
-
-    shortcuts.forEach(accelerator => {
-        globalShortcut.register(accelerator, () => {
-            if (!mainWindow.isVisible()) {
-                return;
+    // Load custom keybinds or use defaults
+    const defaultKeybinds = getDefaultKeybinds();
+    let keybinds = defaultKeybinds;
+    
+    // Try to load saved keybinds
+    mainWindow.webContents.once('dom-ready', () => {
+        mainWindow.webContents.executeJavaScript(`
+            try {
+                const saved = localStorage.getItem('customKeybinds');
+                return saved ? JSON.parse(saved) : null;
+            } catch (e) {
+                return null;
             }
-            
-            const [currentX, currentY] = mainWindow.getPosition();
-            let newX = currentX;
-            let newY = currentY;
-
-            switch (accelerator) {
-                case `${modifier}+Up`:
-                    newY -= moveIncrement;
-                    break;
-                case `${modifier}+Down`:
-                    newY += moveIncrement;
-                    break;
-                case `${modifier}+Left`:
-                    newX -= moveIncrement;
-                    break;
-                case `${modifier}+Right`:
-                    newX += moveIncrement;
-                    break;
+        `).then(savedKeybinds => {
+            if (savedKeybinds) {
+                keybinds = { ...defaultKeybinds, ...savedKeybinds };
             }
-
-            mainWindow.setPosition(newX, newY);
+            updateGlobalShortcuts(keybinds, mainWindow);
+        }).catch(() => {
+            // Fallback to default keybinds
+            updateGlobalShortcuts(keybinds, mainWindow);
         });
     });
 
-    const toggleVisibilityShortcut = isMac ? 'Cmd+\\' : 'Ctrl+\\';
-    globalShortcut.register(toggleVisibilityShortcut, () => {
-        if (mainWindow.isVisible()) {
-            mainWindow.hide();
-        } else {
-            mainWindow.show();
-        }
-    });
-
-    const toggleShortcut = isMac ? 'Cmd+M' : 'Ctrl+M';
-    globalShortcut.register(toggleShortcut, () => {
-        mouseEventsIgnored = !mouseEventsIgnored;
-        if (mouseEventsIgnored) {
-            mainWindow.setIgnoreMouseEvents(true, { forward: true });
-            console.log('Mouse events ignored');
-        } else {
-            mainWindow.setIgnoreMouseEvents(false);
-            console.log('Mouse events enabled');
-        }
-        mainWindow.webContents.send('click-through-toggled', mouseEventsIgnored);
-    });
-
-    const nextStepShortcut = isMac ? 'Cmd+Enter' : 'Ctrl+Enter';
-    globalShortcut.register(nextStepShortcut, async () => {
-        console.log('Next step shortcut triggered');
-        try {
-            if (geminiSession) {
-                await geminiSession.sendRealtimeInput({ text: 'What should be the next step here' });
-                console.log('Sent "next step" message to Gemini');
-            } else {
-                console.log('No active Gemini session');
-            }
-        } catch (error) {
-            console.error('Error sending next step message:', error);
-        }
-    });
-
-    const manualScreenshotShortcut = isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S';
-    globalShortcut.register(manualScreenshotShortcut, () => {
-        console.log('Manual screenshot shortcut triggered');
-        mainWindow.webContents.executeJavaScript(`
-            if (window.captureManualScreenshot) {
-                window.captureManualScreenshot();
-            } else {
-                console.log('Manual screenshot function not available');
-            }
-        `);
-    });
+    // Initialize with default keybinds immediately for early app usage
+    updateGlobalShortcuts(keybinds, mainWindow);
 
     ipcMain.on('view-changed', (event, view) => {
         if (view !== 'assistant') {
@@ -169,6 +110,150 @@ function createWindow() {
     ipcMain.handle('window-minimize', () => {
         mainWindow.minimize();
     });
+
+    // Handle keybind updates
+    ipcMain.on('update-keybinds', (event, newKeybinds) => {
+        updateGlobalShortcuts(newKeybinds, mainWindow);
+    });
+}
+
+function getDefaultKeybinds() {
+    const isMac = process.platform === 'darwin';
+    return {
+        moveUp: isMac ? 'Alt+Up' : 'Ctrl+Up',
+        moveDown: isMac ? 'Alt+Down' : 'Ctrl+Down',
+        moveLeft: isMac ? 'Alt+Left' : 'Ctrl+Left',
+        moveRight: isMac ? 'Alt+Right' : 'Ctrl+Right',
+        toggleVisibility: isMac ? 'Cmd+\\' : 'Ctrl+\\',
+        toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
+        nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
+        manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S'
+    };
+}
+
+function updateGlobalShortcuts(keybinds, mainWindow) {
+    console.log('Updating global shortcuts with:', keybinds);
+    
+    // Unregister all existing shortcuts
+    globalShortcut.unregisterAll();
+    
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width, height } = primaryDisplay.workAreaSize;
+    const moveIncrement = Math.floor(Math.min(width, height) * 0.15);
+    
+    // Register window movement shortcuts
+    const movementActions = {
+        moveUp: () => {
+            if (!mainWindow.isVisible()) return;
+            const [currentX, currentY] = mainWindow.getPosition();
+            mainWindow.setPosition(currentX, currentY - moveIncrement);
+        },
+        moveDown: () => {
+            if (!mainWindow.isVisible()) return;
+            const [currentX, currentY] = mainWindow.getPosition();
+            mainWindow.setPosition(currentX, currentY + moveIncrement);
+        },
+        moveLeft: () => {
+            if (!mainWindow.isVisible()) return;
+            const [currentX, currentY] = mainWindow.getPosition();
+            mainWindow.setPosition(currentX - moveIncrement, currentY);
+        },
+        moveRight: () => {
+            if (!mainWindow.isVisible()) return;
+            const [currentX, currentY] = mainWindow.getPosition();
+            mainWindow.setPosition(currentX + moveIncrement, currentY);
+        }
+    };
+    
+    // Register each movement shortcut
+    Object.keys(movementActions).forEach(action => {
+        const keybind = keybinds[action];
+        if (keybind) {
+            try {
+                globalShortcut.register(keybind, movementActions[action]);
+                console.log(`Registered ${action}: ${keybind}`);
+            } catch (error) {
+                console.error(`Failed to register ${action} (${keybind}):`, error);
+            }
+        }
+    });
+    
+    // Register toggle visibility shortcut
+    if (keybinds.toggleVisibility) {
+        try {
+            globalShortcut.register(keybinds.toggleVisibility, () => {
+                if (mainWindow.isVisible()) {
+                    mainWindow.hide();
+                } else {
+                    mainWindow.show();
+                }
+            });
+            console.log(`Registered toggleVisibility: ${keybinds.toggleVisibility}`);
+        } catch (error) {
+            console.error(`Failed to register toggleVisibility (${keybinds.toggleVisibility}):`, error);
+        }
+    }
+    
+    // Register toggle click-through shortcut
+    if (keybinds.toggleClickThrough) {
+        try {
+            globalShortcut.register(keybinds.toggleClickThrough, () => {
+                mouseEventsIgnored = !mouseEventsIgnored;
+                if (mouseEventsIgnored) {
+                    mainWindow.setIgnoreMouseEvents(true, { forward: true });
+                    console.log('Mouse events ignored');
+                } else {
+                    mainWindow.setIgnoreMouseEvents(false);
+                    console.log('Mouse events enabled');
+                }
+                mainWindow.webContents.send('click-through-toggled', mouseEventsIgnored);
+            });
+            console.log(`Registered toggleClickThrough: ${keybinds.toggleClickThrough}`);
+        } catch (error) {
+            console.error(`Failed to register toggleClickThrough (${keybinds.toggleClickThrough}):`, error);
+        }
+    }
+    
+    // Register next step shortcut
+    if (keybinds.nextStep) {
+        try {
+            globalShortcut.register(keybinds.nextStep, async () => {
+                console.log('Next step shortcut triggered');
+                try {
+                    if (geminiSession) {
+                        await geminiSession.sendRealtimeInput({ text: 'What should be the next step here' });
+                        console.log('Sent "next step" message to Gemini');
+                    } else {
+                        console.log('No active Gemini session');
+                    }
+                } catch (error) {
+                    console.error('Error sending next step message:', error);
+                }
+            });
+            console.log(`Registered nextStep: ${keybinds.nextStep}`);
+        } catch (error) {
+            console.error(`Failed to register nextStep (${keybinds.nextStep}):`, error);
+        }
+    }
+    
+    // Register manual screenshot shortcut
+    if (keybinds.manualScreenshot) {
+        try {
+            globalShortcut.register(keybinds.manualScreenshot, () => {
+                console.log('Manual screenshot shortcut triggered');
+                mainWindow.webContents.executeJavaScript(`
+                    if (window.captureManualScreenshot) {
+                        window.captureManualScreenshot();
+                    } else {
+                        console.log('Manual screenshot function not available');
+                    }
+                `);
+            });
+            console.log(`Registered manualScreenshot: ${keybinds.manualScreenshot}`);
+        } catch (error) {
+            console.error(`Failed to register manualScreenshot (${keybinds.manualScreenshot}):`, error);
+        }
+    }
 }
 
 async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'interview', language = 'en-US') {
