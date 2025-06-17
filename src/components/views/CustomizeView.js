@@ -2,64 +2,152 @@ import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
 
 export class CustomizeView extends LitElement {
     static styles = css`
-        .option-group {
-            margin-bottom: 24px;
+        :host {
+            display: block;
+            padding: 20px;
+            margin: 0 auto;
         }
 
-        .option-label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--option-label-color);
+        .settings-container {
+            display: grid;
+            gap: 24px;
+        }
+
+        .settings-section {
+            background: var(--card-background, rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
             font-weight: 500;
             font-size: 14px;
+            color: var(--label-color, rgba(255, 255, 255, 0.9));
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .option-group .description {
-            margin-top: 8px;
-            margin-bottom: 0;
-            font-size: 13px;
-            color: var(--description-color);
+        .form-description {
+            font-size: 12px;
+            color: var(--description-color, rgba(255, 255, 255, 0.6));
+            line-height: 1.4;
+            margin-top: 4px;
         }
 
-        select {
-            background: var(--input-background);
+        .form-control {
+            background: var(--input-background, rgba(0, 0, 0, 0.3));
             color: var(--text-color);
-            border: 1px solid var(--button-border);
-            padding: 10px 14px;
-            width: 100%;
+            border: 1px solid var(--input-border, rgba(255, 255, 255, 0.2));
+            padding: 12px 16px;
             border-radius: 8px;
             font-size: 14px;
+            transition: all 0.2s ease;
+            min-height: 20px;
         }
 
-        select:focus {
+        .form-control:focus {
             outline: none;
-            border-color: var(--focus-border-color);
-            box-shadow: 0 0 0 3px var(--focus-box-shadow);
-            background: var(--input-focus-background);
+            border-color: var(--focus-border-color, #007AFF);
+            box-shadow: 0 0 0 3px var(--focus-shadow, rgba(0, 122, 255, 0.1));
+            background: var(--input-focus-background, rgba(0, 0, 0, 0.4));
         }
 
-        textarea {
-            background: var(--input-background);
-            color: var(--text-color);
-            border: 1px solid var(--button-border);
-            padding: 10px 14px;
-            width: 100%;
-            border-radius: 8px;
-            font-size: 14px;
-            height: 120px;
+        .form-control:hover:not(:focus) {
+            border-color: var(--input-hover-border, rgba(255, 255, 255, 0.3));
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        textarea.form-control {
             resize: vertical;
+            min-height: 100px;
             line-height: 1.5;
+            font-family: inherit;
         }
 
-        textarea:focus {
-            outline: none;
-            border-color: var(--focus-border-color);
-            box-shadow: 0 0 0 3px var(--focus-box-shadow);
-            background: var(--input-focus-background);
+        textarea.form-control::placeholder {
+            color: var(--placeholder-color, rgba(255, 255, 255, 0.4));
         }
 
-        textarea::placeholder {
-            color: var(--placeholder-color);
+        .profile-option {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+
+
+        .current-selection {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--success-color, #28a745);
+            background: var(--success-background, rgba(40, 167, 69, 0.1));
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .settings-note {
+            font-size: 12px;
+            color: var(--note-color, rgba(255, 255, 255, 0.5));
+            font-style: italic;
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: var(--note-background, rgba(255, 255, 255, 0.02));
+            border-radius: 8px;
+            border: 1px dashed var(--note-border, rgba(255, 255, 255, 0.1));
         }
     `;
 
@@ -193,68 +281,127 @@ export class CustomizeView extends LitElement {
         const profiles = this.getProfiles();
         const languages = this.getLanguages();
         const profileNames = this.getProfileNames();
+        const currentProfile = profiles.find(p => p.value === this.selectedProfile);
+        const currentLanguage = languages.find(l => l.value === this.selectedLanguage);
 
         return html`
-            <div>
-                <div class="option-group">
-                    <label class="option-label">Select Profile</label>
-                    <select .value=${this.selectedProfile} @change=${this.handleProfileSelect}>
-                        ${profiles.map(
-                            profile => html`
-                                <option value=${profile.value} ?selected=${this.selectedProfile === profile.value}>${profile.name}</option>
-                            `
-                        )}
-                    </select>
-                    <div class="description">${profiles.find(p => p.value === this.selectedProfile)?.description || ''}</div>
-                </div>
+            <div class="settings-container">
+                <!-- Profile & Behavior Section -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <span>AI Profile & Behavior</span>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Profile Type
+                                    <span class="current-selection">✓ ${currentProfile?.name || 'Unknown'}</span>
+                                </label>
+                                                                 <select class="form-control" .value=${this.selectedProfile} @change=${this.handleProfileSelect}>
+                                     ${profiles.map(profile => html`
+                                         <option value=${profile.value} ?selected=${this.selectedProfile === profile.value}>
+                                             ${profile.name}
+                                         </option>
+                                     `)}
+                                 </select>
+                            </div>
+                        </div>
 
-                <div class="option-group">
-                    <span class="option-label">AI Behavior for ${profileNames[this.selectedProfile] || 'Selected Profile'}</span>
-                    <textarea
-                        placeholder="Describe how you want the AI to behave..."
-                        .value=${localStorage.getItem('customPrompt') || ''}
-                        class="custom-prompt-textarea"
-                        rows="4"
-                        @input=${this.handleCustomPromptInput}
-                    ></textarea>
-                    <div class="description">
-                        This custom prompt will be added to the ${profileNames[this.selectedProfile] || 'selected profile'} instructions to
-                        personalize the AI's behavior.
+                        
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Custom AI Instructions</label>
+                            <textarea
+                                class="form-control"
+                                placeholder="Add specific instructions for how you want the AI to behave during ${profileNames[this.selectedProfile] || 'this interaction'}..."
+                                .value=${localStorage.getItem('customPrompt') || ''}
+                                rows="4"
+                                @input=${this.handleCustomPromptInput}
+                            ></textarea>
+                            <div class="form-description">
+                                Personalize the AI's behavior with specific instructions that will be added to the ${profileNames[this.selectedProfile] || 'selected profile'} base prompts
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="option-group">
-                    <label class="option-label">Select Language</label>
-                    <select .value=${this.selectedLanguage} @change=${this.handleLanguageSelect}>
-                        ${languages.map(
-                            language => html`
-                                <option value=${language.value} ?selected=${this.selectedLanguage === language.value}>${language.name}</option>
-                            `
-                        )}
-                    </select>
-                    <div class="description">Choose the language for speech recognition and AI responses.</div>
+                <!-- Language & Audio Section -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <span>Language & Audio</span>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Speech Language
+                                    <span class="current-selection">✓ ${currentLanguage?.name || 'Unknown'}</span>
+                                </label>
+                                <select class="form-control" .value=${this.selectedLanguage} @change=${this.handleLanguageSelect}>
+                                    ${languages.map(language => html`
+                                        <option value=${language.value} ?selected=${this.selectedLanguage === language.value}>
+                                            ${language.name}
+                                        </option>
+                                    `)}
+                                </select>
+                                <div class="form-description">Language for speech recognition and AI responses</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="option-group">
-                    <label class="option-label">Screenshot Interval</label>
-                    <select .value=${this.selectedScreenshotInterval} @change=${this.handleScreenshotIntervalSelect}>
-                        <option value="manual" ?selected=${this.selectedScreenshotInterval === 'manual'}>Manual (On demand)</option>
-                        <option value="1" ?selected=${this.selectedScreenshotInterval === '1'}>1 second</option>
-                        <option value="2" ?selected=${this.selectedScreenshotInterval === '2'}>2 seconds</option>
-                        <option value="5" ?selected=${this.selectedScreenshotInterval === '5'}>5 seconds</option>
-                        <option value="10" ?selected=${this.selectedScreenshotInterval === '10'}>10 seconds</option>
-                    </select>
-                    <div class="description">Frequency of screen captures sent to the AI. Manual mode requires pressing a key to capture.</div>
+                <!-- Screen Capture Section -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <span>Screen Capture Settings</span>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Capture Interval
+                                    <span class="current-selection">✓ ${this.selectedScreenshotInterval === 'manual' ? 'Manual' : this.selectedScreenshotInterval + 's'}</span>
+                                </label>
+                                <select class="form-control" .value=${this.selectedScreenshotInterval} @change=${this.handleScreenshotIntervalSelect}>
+                                    <option value="manual" ?selected=${this.selectedScreenshotInterval === 'manual'}>Manual (On demand)</option>
+                                    <option value="1" ?selected=${this.selectedScreenshotInterval === '1'}>Every 1 second</option>
+                                    <option value="2" ?selected=${this.selectedScreenshotInterval === '2'}>Every 2 seconds</option>
+                                    <option value="5" ?selected=${this.selectedScreenshotInterval === '5'}>Every 5 seconds</option>
+                                    <option value="10" ?selected=${this.selectedScreenshotInterval === '10'}>Every 10 seconds</option>
+                                </select>
+                                <div class="form-description">
+                                    ${this.selectedScreenshotInterval === 'manual' 
+                                        ? 'Screenshots will only be taken when you press the manual capture key (⌘+Shift+S)' 
+                                        : 'Automatic screenshots will be taken at the specified interval'}
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Image Quality
+                                    <span class="current-selection">✓ ${this.selectedImageQuality.charAt(0).toUpperCase() + this.selectedImageQuality.slice(1)}</span>
+                                </label>
+                                <select class="form-control" .value=${this.selectedImageQuality} @change=${this.handleImageQualitySelect}>
+                                    <option value="high" ?selected=${this.selectedImageQuality === 'high'}>High Quality</option>
+                                    <option value="medium" ?selected=${this.selectedImageQuality === 'medium'}>Medium Quality</option>
+                                    <option value="low" ?selected=${this.selectedImageQuality === 'low'}>Low Quality</option>
+                                </select>
+                                <div class="form-description">
+                                    ${this.selectedImageQuality === 'high' ? 'Best quality, uses more tokens' :
+                                      this.selectedImageQuality === 'medium' ? 'Balanced quality and token usage' :
+                                      'Lower quality, uses fewer tokens'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="option-group">
-                    <label class="option-label">Image Quality</label>
-                    <select .value=${this.selectedImageQuality} @change=${this.handleImageQualitySelect}>
-                        <option value="high" ?selected=${this.selectedImageQuality === 'high'}>High (More tokens)</option>
-                        <option value="medium" ?selected=${this.selectedImageQuality === 'medium'}>Medium (Balanced)</option>
-                        <option value="low" ?selected=${this.selectedImageQuality === 'low'}>Low (Fewer tokens)</option>
-                    </select>
-                    <div class="description">Quality of screenshots sent to the AI. Lower quality uses fewer tokens.</div>
+                <div class="settings-note">
+                    💡 Settings are automatically saved as you change them. Changes will take effect immediately or on the next session start.
                 </div>
             </div>
         `;
