@@ -205,6 +205,7 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
             },
             config: {
                 responseModalities: ['TEXT'],
+                contextWindowCompression: { slidingWindow: {} },
                 speechConfig: { languageCode: language },
                 systemInstruction: {
                     parts: [{ text: systemPrompt }],
@@ -236,7 +237,7 @@ function startMacOSAudioCapture() {
     if (app.isPackaged) {
         systemAudioPath = path.join(process.resourcesPath, 'SystemAudioDump');
     } else {
-        systemAudioPath = path.join(__dirname, 'SystemAudioDump');
+        systemAudioPath = path.join(__dirname, 'assets', 'SystemAudioDump');
     }
 
     console.log('SystemAudioDump path:', systemAudioPath);
