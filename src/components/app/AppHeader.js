@@ -101,6 +101,7 @@ export class AppHeader extends LitElement {
 
     getViewTitle() {
         const titles = {
+            onboarding: 'Welcome to Cheating Daddy',
             main: 'Cheating Daddy',
             customize: 'Customize',
             help: 'Help & Shortcuts',

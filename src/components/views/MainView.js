@@ -100,6 +100,12 @@ export class MainView extends LitElement {
         this.onAPIKeyHelp();
     }
 
+    handleResetOnboarding() {
+        localStorage.removeItem('onboardingCompleted');
+        // Refresh the page to trigger onboarding
+        window.location.reload();
+    }
+
     render() {
         return html`
             <div class="welcome">Welcome</div>

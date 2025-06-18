@@ -5,6 +5,7 @@ import { CustomizeView } from '../views/CustomizeView.js';
 import { HelpView } from '../views/HelpView.js';
 import { HistoryView } from '../views/HistoryView.js';
 import { AssistantView } from '../views/AssistantView.js';
+import { OnboardingView } from '../views/OnboardingView.js';
 
 export class CheatingDaddyApp extends LitElement {
     static styles = css`
@@ -53,6 +54,12 @@ export class CheatingDaddyApp extends LitElement {
         .main-content.assistant-view {
             padding: 10px;
             border: none;
+        }
+
+        .main-content.onboarding-view {
+            padding: 0;
+            border: none;
+            background: transparent;
         }
 
         .view-container {
@@ -105,7 +112,9 @@ export class CheatingDaddyApp extends LitElement {
 
     constructor() {
         super();
-        this.currentView = 'main';
+        // Check if onboarding has been completed
+        const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+        this.currentView = onboardingCompleted ? 'main' : 'onboarding';
         this.statusText = '';
         this.startTime = null;
         this.isRecording = false;
@@ -180,6 +189,10 @@ export class CheatingDaddyApp extends LitElement {
 
     async handleClose() {
         if (this.currentView === 'customize' || this.currentView === 'help' || this.currentView === 'history') {
+            this.currentView = 'main';
+        } else if (this.currentView === 'onboarding') {
+            // Allow closing onboarding without completing it
+            localStorage.setItem('onboardingCompleted', 'true');
             this.currentView = 'main';
         } else if (this.currentView === 'assistant') {
             if (window.cheddar) {
@@ -273,6 +286,11 @@ export class CheatingDaddyApp extends LitElement {
         this.currentResponseIndex = e.detail.index;
     }
 
+    // Onboarding event handlers
+    handleOnboardingComplete() {
+        this.currentView = 'main';
+    }
+
     updated(changedProperties) {
         super.updated(changedProperties);
         
@@ -311,6 +329,14 @@ export class CheatingDaddyApp extends LitElement {
         const viewKey = `${this.currentView}-${this.selectedProfile}-${this.selectedLanguage}`;
         
         switch (this.currentView) {
+            case 'onboarding':
+                return html`
+                    <onboarding-view
+                        .onComplete=${() => this.handleOnboardingComplete()}
+                        .onClose=${() => this.handleClose()}
+                    ></onboarding-view>
+                `;
+
             case 'main':
                 return html`
                     <main-view
@@ -363,7 +389,8 @@ export class CheatingDaddyApp extends LitElement {
 
     render() {
         const mainContentClass = `main-content ${
-            this.currentView === 'assistant' ? 'assistant-view' : 'with-border'
+            this.currentView === 'assistant' ? 'assistant-view' : 
+            this.currentView === 'onboarding' ? 'onboarding-view' : 'with-border'
         }`;
 
         return html`
