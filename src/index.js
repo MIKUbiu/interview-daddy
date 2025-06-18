@@ -18,6 +18,11 @@ let audioIntervalTimer = null;
 let mouseEventsIgnored = false;
 let messageBuffer = '';
 
+// Add conversation tracking variables
+let currentSessionId = null;
+let currentTranscription = '';
+let conversationHistory = [];
+
 function ensureDataDirectories() {
     const homeDir = os.homedir();
     const cheddarDir = path.join(homeDir, 'cheddar');
@@ -32,6 +37,43 @@ function ensureDataDirectories() {
     });
 
     return { imageDir, audioDir };
+}
+
+// Conversation management functions
+function initializeNewSession() {
+    currentSessionId = Date.now().toString();
+    currentTranscription = '';
+    conversationHistory = [];
+    console.log('New conversation session started:', currentSessionId);
+}
+
+function saveConversationTurn(transcription, aiResponse) {
+    if (!currentSessionId) {
+        initializeNewSession();
+    }
+    
+    const conversationTurn = {
+        timestamp: Date.now(),
+        transcription: transcription.trim(),
+        ai_response: aiResponse.trim()
+    };
+    
+    conversationHistory.push(conversationTurn);
+    console.log('Saved conversation turn:', conversationTurn);
+    
+    // Send to renderer to save in IndexedDB
+    sendToRenderer('save-conversation-turn', {
+        sessionId: currentSessionId,
+        turn: conversationTurn,
+        fullHistory: conversationHistory
+    });
+}
+
+function getCurrentSessionData() {
+    return {
+        sessionId: currentSessionId,
+        history: conversationHistory
+    };
 }
 
 function createWindow() {
@@ -263,6 +305,9 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
     });
 
     const systemPrompt = getSystemPrompt(profile, customPrompt);
+    
+    // Initialize new conversation session
+    initializeNewSession();
 
     try {
         const session = await client.live.connect({
@@ -273,6 +318,13 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
                 },
                 onmessage: function (message) {
                     console.log(message);
+                    
+                    // Handle transcription input
+                    if (message.serverContent?.inputTranscription?.text) {
+                        currentTranscription += message.serverContent.inputTranscription.text;
+                    }
+                    
+                    // Handle AI model response
                     if (message.serverContent?.modelTurn?.parts) {
                         for (const part of message.serverContent.modelTurn.parts) {
                             console.log(part);
@@ -284,6 +336,13 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
 
                     if (message.serverContent?.generationComplete) {
                         sendToRenderer('update-response', messageBuffer);
+                        
+                        // Save conversation turn when we have both transcription and AI response
+                        if (currentTranscription && messageBuffer) {
+                            saveConversationTurn(currentTranscription, messageBuffer);
+                            currentTranscription = ''; // Reset for next turn
+                        }
+                        
                         messageBuffer = '';
                     }
 
@@ -302,6 +361,7 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
             },
             config: {
                 responseModalities: ['TEXT'],
+                inputAudioTranscription: {},
                 contextWindowCompression: { slidingWindow: {} },
                 speechConfig: { languageCode: language },
                 systemInstruction: {
@@ -595,6 +655,26 @@ ipcMain.handle('toggle-window-visibility', async (event) => {
         return { success: true };
     } catch (error) {
         console.error('Error toggling window visibility:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// Conversation history IPC handlers
+ipcMain.handle('get-current-session', async (event) => {
+    try {
+        return { success: true, data: getCurrentSessionData() };
+    } catch (error) {
+        console.error('Error getting current session:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('start-new-session', async (event) => {
+    try {
+        initializeNewSession();
+        return { success: true, sessionId: currentSessionId };
+    } catch (error) {
+        console.error('Error starting new session:', error);
         return { success: false, error: error.message };
     }
 });

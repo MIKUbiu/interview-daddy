@@ -3,6 +3,7 @@ import { AppHeader } from './AppHeader.js';
 import { MainView } from '../views/MainView.js';
 import { CustomizeView } from '../views/CustomizeView.js';
 import { HelpView } from '../views/HelpView.js';
+import { HistoryView } from '../views/HistoryView.js';
 import { AssistantView } from '../views/AssistantView.js';
 
 export class CheatingDaddyApp extends LitElement {
@@ -172,8 +173,13 @@ export class CheatingDaddyApp extends LitElement {
         this.requestUpdate();
     }
 
+    handleHistoryClick() {
+        this.currentView = 'history';
+        this.requestUpdate();
+    }
+
     async handleClose() {
-        if (this.currentView === 'customize' || this.currentView === 'help') {
+        if (this.currentView === 'customize' || this.currentView === 'help' || this.currentView === 'history') {
             this.currentView = 'main';
         } else if (this.currentView === 'assistant') {
             if (window.cheddar) {
@@ -334,6 +340,11 @@ export class CheatingDaddyApp extends LitElement {
                     ></help-view>
                 `;
 
+            case 'history':
+                return html`
+                    <history-view></history-view>
+                `;
+
             case 'assistant':
                 return html`
                     <assistant-view
@@ -364,6 +375,7 @@ export class CheatingDaddyApp extends LitElement {
                         .startTime=${this.startTime}
                         .onCustomizeClick=${() => this.handleCustomizeClick()}
                         .onHelpClick=${() => this.handleHelpClick()}
+                        .onHistoryClick=${() => this.handleHistoryClick()}
                         .onCloseClick=${() => this.handleClose()}
                         .onHideToggleClick=${() => this.handleHideToggle()}
                         ?isClickThrough=${this._isClickThrough}
