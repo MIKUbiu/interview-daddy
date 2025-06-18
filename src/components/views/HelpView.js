@@ -90,7 +90,6 @@ export class HelpView extends LitElement {
             color: var(--text-color);
             margin-bottom: 8px;
             padding-bottom: 4px;
-            border-bottom: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
         }
 
         .shortcut-item {
@@ -162,7 +161,6 @@ export class HelpView extends LitElement {
         .community-link:hover {
             background: var(--input-hover-background, rgba(0, 0, 0, 0.3));
             border-color: var(--link-color, #007aff);
-            transform: translateY(-1px);
         }
 
         .usage-steps {
