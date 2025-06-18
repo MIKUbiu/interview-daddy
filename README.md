@@ -40,7 +40,7 @@ A real-time AI assistant that provides contextual help during video calls, inter
 
 ## Audio Capture
 
-- **macOS**: [SystemAudioDump](https://github.com/Mohammed-Yasin-Mulla/Sound) for system audio 
+- **macOS**: [SystemAudioDump](https://github.com/Mohammed-Yasin-Mulla/Sound) for system audio
 - **Windows**: Loopback audio capture
 - **Linux**: Microphone input
 
@@ -49,4 +49,4 @@ A real-time AI assistant that provides contextual help during video calls, inter
 - Electron-compatible OS (macOS, Windows, Linux)
 - Gemini API key
 - Screen recording permissions
-- Microphone/audio permissions 
+- Microphone/audio permissions

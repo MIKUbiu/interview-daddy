@@ -88,7 +88,7 @@ export class CustomizeView extends LitElement {
 
         .form-control:focus {
             outline: none;
-            border-color: var(--focus-border-color, #007AFF);
+            border-color: var(--focus-border-color, #007aff);
             box-shadow: 0 0 0 2px var(--focus-shadow, rgba(0, 122, 255, 0.1));
             background: var(--input-focus-background, rgba(0, 0, 0, 0.4));
         }
@@ -259,7 +259,7 @@ export class CustomizeView extends LitElement {
         onProfileChange: { type: Function },
         onLanguageChange: { type: Function },
         onScreenshotIntervalChange: { type: Function },
-        onImageQualityChange: { type: Function }
+        onImageQualityChange: { type: Function },
     };
 
     constructor() {
@@ -389,7 +389,7 @@ export class CustomizeView extends LitElement {
             toggleVisibility: isMac ? 'Cmd+\\' : 'Ctrl+\\',
             toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
             nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
-            manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S'
+            manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
         };
     }
 
@@ -435,43 +435,43 @@ export class CustomizeView extends LitElement {
             {
                 key: 'moveUp',
                 name: 'Move Window Up',
-                description: 'Move the application window up'
+                description: 'Move the application window up',
             },
             {
                 key: 'moveDown',
                 name: 'Move Window Down',
-                description: 'Move the application window down'
+                description: 'Move the application window down',
             },
             {
                 key: 'moveLeft',
                 name: 'Move Window Left',
-                description: 'Move the application window left'
+                description: 'Move the application window left',
             },
             {
                 key: 'moveRight',
                 name: 'Move Window Right',
-                description: 'Move the application window right'
+                description: 'Move the application window right',
             },
             {
                 key: 'toggleVisibility',
                 name: 'Toggle Window Visibility',
-                description: 'Show/hide the application window'
+                description: 'Show/hide the application window',
             },
             {
                 key: 'toggleClickThrough',
                 name: 'Toggle Click-through Mode',
-                description: 'Enable/disable click-through functionality'
+                description: 'Enable/disable click-through functionality',
             },
             {
                 key: 'nextStep',
                 name: 'Ask Next Step',
-                description: 'Ask AI for the next step suggestion'
+                description: 'Ask AI for the next step suggestion',
             },
             {
                 key: 'manualScreenshot',
                 name: 'Manual Screenshot',
-                description: 'Take a manual screenshot for AI analysis'
-            }
+                description: 'Take a manual screenshot for AI analysis',
+            },
         ];
     }
 
@@ -482,19 +482,19 @@ export class CustomizeView extends LitElement {
 
     handleKeybindInput(e) {
         e.preventDefault();
-        
+
         const modifiers = [];
         const keys = [];
-        
+
         // Check modifiers
         if (e.ctrlKey) modifiers.push('Ctrl');
         if (e.metaKey) modifiers.push('Cmd');
         if (e.altKey) modifiers.push('Alt');
         if (e.shiftKey) modifiers.push('Shift');
-        
+
         // Get the main key
         let mainKey = e.key;
-        
+
         // Handle special keys
         switch (e.code) {
             case 'ArrowUp':
@@ -530,21 +530,21 @@ export class CustomizeView extends LitElement {
                 }
                 break;
         }
-        
+
         // Skip if only modifier keys are pressed
         if (['Control', 'Meta', 'Alt', 'Shift'].includes(e.key)) {
             return;
         }
-        
+
         // Construct keybind string
         const keybind = [...modifiers, mainKey].join('+');
-        
+
         // Get the action from the input's data attribute
         const action = e.target.dataset.action;
-        
+
         // Update the keybind
         this.handleKeybindChange(action, keybind);
-        
+
         // Update the input value
         e.target.value = keybind;
         e.target.blur();
@@ -564,7 +564,7 @@ export class CustomizeView extends LitElement {
                     <div class="section-title">
                         <span>AI Profile & Behavior</span>
                     </div>
-                    
+
                     <div class="form-grid">
                         <div class="form-row">
                             <div class="form-group">
@@ -572,29 +572,32 @@ export class CustomizeView extends LitElement {
                                     Profile Type
                                     <span class="current-selection">✓ ${currentProfile?.name || 'Unknown'}</span>
                                 </label>
-                                                                 <select class="form-control" .value=${this.selectedProfile} @change=${this.handleProfileSelect}>
-                                     ${profiles.map(profile => html`
-                                         <option value=${profile.value} ?selected=${this.selectedProfile === profile.value}>
-                                             ${profile.name}
-                                         </option>
-                                     `)}
-                                 </select>
+                                <select class="form-control" .value=${this.selectedProfile} @change=${this.handleProfileSelect}>
+                                    ${profiles.map(
+                                        profile => html`
+                                            <option value=${profile.value} ?selected=${this.selectedProfile === profile.value}>
+                                                ${profile.name}
+                                            </option>
+                                        `
+                                    )}
+                                </select>
                             </div>
                         </div>
-
-                        
 
                         <div class="form-group full-width">
                             <label class="form-label">Custom AI Instructions</label>
                             <textarea
                                 class="form-control"
-                                placeholder="Add specific instructions for how you want the AI to behave during ${profileNames[this.selectedProfile] || 'this interaction'}..."
+                                placeholder="Add specific instructions for how you want the AI to behave during ${profileNames[
+                                    this.selectedProfile
+                                ] || 'this interaction'}..."
                                 .value=${localStorage.getItem('customPrompt') || ''}
                                 rows="4"
                                 @input=${this.handleCustomPromptInput}
                             ></textarea>
                             <div class="form-description">
-                                Personalize the AI's behavior with specific instructions that will be added to the ${profileNames[this.selectedProfile] || 'selected profile'} base prompts
+                                Personalize the AI's behavior with specific instructions that will be added to the
+                                ${profileNames[this.selectedProfile] || 'selected profile'} base prompts
                             </div>
                         </div>
                     </div>
@@ -605,7 +608,7 @@ export class CustomizeView extends LitElement {
                     <div class="section-title">
                         <span>Language & Audio</span>
                     </div>
-                    
+
                     <div class="form-grid">
                         <div class="form-row">
                             <div class="form-group">
@@ -614,11 +617,13 @@ export class CustomizeView extends LitElement {
                                     <span class="current-selection">✓ ${currentLanguage?.name || 'Unknown'}</span>
                                 </label>
                                 <select class="form-control" .value=${this.selectedLanguage} @change=${this.handleLanguageSelect}>
-                                    ${languages.map(language => html`
-                                        <option value=${language.value} ?selected=${this.selectedLanguage === language.value}>
-                                            ${language.name}
-                                        </option>
-                                    `)}
+                                    ${languages.map(
+                                        language => html`
+                                            <option value=${language.value} ?selected=${this.selectedLanguage === language.value}>
+                                                ${language.name}
+                                            </option>
+                                        `
+                                    )}
                                 </select>
                                 <div class="form-description">Language for speech recognition and AI responses</div>
                             </div>
@@ -631,13 +636,15 @@ export class CustomizeView extends LitElement {
                     <div class="section-title">
                         <span>Screen Capture Settings</span>
                     </div>
-                    
+
                     <div class="form-grid">
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">
                                     Capture Interval
-                                    <span class="current-selection">✓ ${this.selectedScreenshotInterval === 'manual' ? 'Manual' : this.selectedScreenshotInterval + 's'}</span>
+                                    <span class="current-selection"
+                                        >✓ ${this.selectedScreenshotInterval === 'manual' ? 'Manual' : this.selectedScreenshotInterval + 's'}</span
+                                    >
                                 </label>
                                 <select class="form-control" .value=${this.selectedScreenshotInterval} @change=${this.handleScreenshotIntervalSelect}>
                                     <option value="manual" ?selected=${this.selectedScreenshotInterval === 'manual'}>Manual (On demand)</option>
@@ -647,8 +654,8 @@ export class CustomizeView extends LitElement {
                                     <option value="10" ?selected=${this.selectedScreenshotInterval === '10'}>Every 10 seconds</option>
                                 </select>
                                 <div class="form-description">
-                                    ${this.selectedScreenshotInterval === 'manual' 
-                                        ? 'Screenshots will only be taken when you press the manual capture key (⌘+Shift+S)' 
+                                    ${this.selectedScreenshotInterval === 'manual'
+                                        ? 'Screenshots will only be taken when you press the manual capture key (⌘+Shift+S)'
                                         : 'Automatic screenshots will be taken at the specified interval'}
                                 </div>
                             </div>
@@ -656,7 +663,9 @@ export class CustomizeView extends LitElement {
                             <div class="form-group">
                                 <label class="form-label">
                                     Image Quality
-                                    <span class="current-selection">✓ ${this.selectedImageQuality.charAt(0).toUpperCase() + this.selectedImageQuality.slice(1)}</span>
+                                    <span class="current-selection"
+                                        >✓ ${this.selectedImageQuality.charAt(0).toUpperCase() + this.selectedImageQuality.slice(1)}</span
+                                    >
                                 </label>
                                 <select class="form-control" .value=${this.selectedImageQuality} @change=${this.handleImageQualitySelect}>
                                     <option value="high" ?selected=${this.selectedImageQuality === 'high'}>High Quality</option>
@@ -664,9 +673,11 @@ export class CustomizeView extends LitElement {
                                     <option value="low" ?selected=${this.selectedImageQuality === 'low'}>Low Quality</option>
                                 </select>
                                 <div class="form-description">
-                                    ${this.selectedImageQuality === 'high' ? 'Best quality, uses more tokens' :
-                                      this.selectedImageQuality === 'medium' ? 'Balanced quality and token usage' :
-                                      'Lower quality, uses fewer tokens'}
+                                    ${this.selectedImageQuality === 'high'
+                                        ? 'Best quality, uses more tokens'
+                                        : this.selectedImageQuality === 'medium'
+                                          ? 'Balanced quality and token usage'
+                                          : 'Lower quality, uses fewer tokens'}
                                 </div>
                             </div>
                         </div>
@@ -678,7 +689,7 @@ export class CustomizeView extends LitElement {
                     <div class="section-title">
                         <span>Keyboard Shortcuts</span>
                     </div>
-                    
+
                     <table class="keybinds-table">
                         <thead>
                             <tr>
@@ -687,31 +698,31 @@ export class CustomizeView extends LitElement {
                             </tr>
                         </thead>
                         <tbody>
-                            ${this.getKeybindActions().map(action => html`
-                                <tr>
-                                    <td>
-                                        <div class="action-name">${action.name}</div>
-                                        <div class="action-description">${action.description}</div>
-                                    </td>
-                                    <td>
-                                        <input
-                                            type="text"
-                                            class="form-control keybind-input"
-                                            .value=${this.keybinds[action.key]}
-                                            placeholder="Press keys..."
-                                            data-action=${action.key}
-                                            @keydown=${this.handleKeybindInput}
-                                            @focus=${this.handleKeybindFocus}
-                                            readonly
-                                        />
-                                    </td>
-                                </tr>
-                            `)}
+                            ${this.getKeybindActions().map(
+                                action => html`
+                                    <tr>
+                                        <td>
+                                            <div class="action-name">${action.name}</div>
+                                            <div class="action-description">${action.description}</div>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                class="form-control keybind-input"
+                                                .value=${this.keybinds[action.key]}
+                                                placeholder="Press keys..."
+                                                data-action=${action.key}
+                                                @keydown=${this.handleKeybindInput}
+                                                @focus=${this.handleKeybindFocus}
+                                                readonly
+                                            />
+                                        </td>
+                                    </tr>
+                                `
+                            )}
                             <tr class="table-reset-row">
                                 <td colspan="2">
-                                    <button class="reset-keybinds-button" @click=${this.resetKeybinds}>
-                                        Reset to Defaults
-                                    </button>
+                                    <button class="reset-keybinds-button" @click=${this.resetKeybinds}>Reset to Defaults</button>
                                     <div class="form-description" style="margin-top: 8px;">
                                         Restore all keyboard shortcuts to their default values
                                     </div>
@@ -729,4 +740,4 @@ export class CustomizeView extends LitElement {
     }
 }
 
-customElements.define('customize-view', CustomizeView); 
+customElements.define('customize-view', CustomizeView);

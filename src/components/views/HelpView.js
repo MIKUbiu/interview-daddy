@@ -46,7 +46,7 @@ export class HelpView extends LitElement {
         }
 
         .link {
-            color: var(--link-color, #007AFF);
+            color: var(--link-color, #007aff);
             text-decoration: none;
             cursor: pointer;
             transition: color 0.2s ease;
@@ -152,7 +152,7 @@ export class HelpView extends LitElement {
             border: 1px solid var(--input-border, rgba(255, 255, 255, 0.1));
             border-radius: 4px;
             text-decoration: none;
-            color: var(--link-color, #007AFF);
+            color: var(--link-color, #007aff);
             font-size: 12px;
             font-weight: 500;
             transition: all 0.2s ease;
@@ -161,7 +161,7 @@ export class HelpView extends LitElement {
 
         .community-link:hover {
             background: var(--input-hover-background, rgba(0, 0, 0, 0.3));
-            border-color: var(--link-color, #007AFF);
+            border-color: var(--link-color, #007aff);
             transform: translateY(-1px);
         }
 
@@ -185,7 +185,7 @@ export class HelpView extends LitElement {
             top: 0;
             width: 18px;
             height: 18px;
-            background: var(--link-color, #007AFF);
+            background: var(--link-color, #007aff);
             color: white;
             border-radius: 50%;
             display: flex;
@@ -202,7 +202,7 @@ export class HelpView extends LitElement {
 
     static properties = {
         onExternalLinkClick: { type: Function },
-        keybinds: { type: Object }
+        keybinds: { type: Object },
     };
 
     constructor() {
@@ -222,7 +222,7 @@ export class HelpView extends LitElement {
             toggleVisibility: isMac ? 'Cmd+\\' : 'Ctrl+\\',
             toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
             nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
-            manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S'
+            manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
         };
     }
 
@@ -337,24 +337,17 @@ export class HelpView extends LitElement {
                         <span>How to Use</span>
                     </div>
                     <div class="usage-steps">
-                        <div class="usage-step">
-                            <strong>Start a Session:</strong> Enter your Gemini API key and click "Start Session"
-                        </div>
-                        <div class="usage-step">
-                            <strong>Customize:</strong> Choose your profile and language in the settings
-                        </div>
+                        <div class="usage-step"><strong>Start a Session:</strong> Enter your Gemini API key and click "Start Session"</div>
+                        <div class="usage-step"><strong>Customize:</strong> Choose your profile and language in the settings</div>
                         <div class="usage-step">
                             <strong>Position Window:</strong> Use keyboard shortcuts to move the window to your desired location
                         </div>
                         <div class="usage-step">
-                            <strong>Click-through Mode:</strong> Use ${this.formatKeybind(this.keybinds.toggleClickThrough)} to make the window click-through
+                            <strong>Click-through Mode:</strong> Use ${this.formatKeybind(this.keybinds.toggleClickThrough)} to make the window
+                            click-through
                         </div>
-                        <div class="usage-step">
-                            <strong>Get AI Help:</strong> The AI will analyze your screen and audio to provide assistance
-                        </div>
-                        <div class="usage-step">
-                            <strong>Text Messages:</strong> Type questions or requests to the AI using the text input
-                        </div>
+                        <div class="usage-step"><strong>Get AI Help:</strong> The AI will analyze your screen and audio to provide assistance</div>
+                        <div class="usage-step"><strong>Text Messages:</strong> Type questions or requests to the AI using the text input</div>
                     </div>
                 </div>
 
@@ -390,13 +383,11 @@ export class HelpView extends LitElement {
                     <div class="option-label">
                         <span>Audio Input</span>
                     </div>
-                    <div class="description">
-                        The AI listens to conversations and provides contextual assistance based on what it hears.
-                    </div>
+                    <div class="description">The AI listens to conversations and provides contextual assistance based on what it hears.</div>
                 </div>
             </div>
         `;
     }
 }
 
-customElements.define('help-view', HelpView); 
+customElements.define('help-view', HelpView);

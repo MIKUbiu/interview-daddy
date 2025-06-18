@@ -25,7 +25,9 @@ export class OnboardingView extends LitElement {
             left: 0;
             right: 0;
             bottom: 50px;
-            transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s ease;
+            transition:
+                transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease;
             opacity: 0;
             transform: translateX(100%);
         }
@@ -69,7 +71,7 @@ export class OnboardingView extends LitElement {
             font-weight: 700;
             margin-bottom: 12px;
             margin-top: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .slide-content {
@@ -77,7 +79,7 @@ export class OnboardingView extends LitElement {
             line-height: 1.5;
             max-width: 100%;
             margin-bottom: 20px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .context-textarea {
@@ -85,9 +87,9 @@ export class OnboardingView extends LitElement {
             max-width: 100%;
             height: 80px;
             padding: 12px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
             font-size: 14px;
             resize: vertical;
@@ -95,13 +97,13 @@ export class OnboardingView extends LitElement {
         }
 
         .context-textarea::placeholder {
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .context-textarea:focus {
             outline: none;
-            border-color: rgba(255,255,255,0.6);
-            background: rgba(255,255,255,0.15);
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .navigation {
@@ -116,8 +118,8 @@ export class OnboardingView extends LitElement {
         }
 
         .nav-button {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
             padding: 8px 16px;
             border-radius: 20px;
@@ -131,8 +133,8 @@ export class OnboardingView extends LitElement {
         }
 
         .nav-button:hover {
-            background: rgba(255,255,255,0.3);
-            border-color: rgba(255,255,255,0.5);
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         .nav-button:disabled {
@@ -142,8 +144,8 @@ export class OnboardingView extends LitElement {
         }
 
         .nav-button:disabled:hover {
-            background: rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
         .progress-dots {
@@ -156,7 +158,7 @@ export class OnboardingView extends LitElement {
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.3);
             transition: all 0.3s ease;
         }
 
@@ -196,7 +198,7 @@ export class OnboardingView extends LitElement {
         currentSlide: { type: Number },
         contextText: { type: String },
         onComplete: { type: Function },
-        onClose: { type: Function }
+        onClose: { type: Function },
     };
 
     constructor() {
@@ -230,10 +232,10 @@ export class OnboardingView extends LitElement {
         if (this.contextText.trim()) {
             localStorage.setItem('customPrompt', this.contextText.trim());
         }
-        
+
         // Mark onboarding as completed
         localStorage.setItem('onboardingCompleted', 'true');
-        
+
         // Call the completion callback
         this.onComplete();
     }
@@ -256,7 +258,8 @@ export class OnboardingView extends LitElement {
                 <div class="emoji">🔒</div>
                 <div class="slide-title">Completely Private</div>
                 <div class="slide-content">
-                    Your secret weapon is completely invisible! It won't show up on screen sharing apps, keeping your assistance completely private during interviews and meetings.
+                    Your secret weapon is completely invisible! It won't show up on screen sharing apps, keeping your assistance completely private
+                    during interviews and meetings.
                 </div>
             </div>
         `;
@@ -268,9 +271,10 @@ export class OnboardingView extends LitElement {
                 <div class="emoji">📝</div>
                 <div class="slide-title">Tell Us Your Context</div>
                 <div class="slide-content">
-                    Help the AI understand your situation better by sharing your context - like your resume, the job description, or interview details.
+                    Help the AI understand your situation better by sharing your context - like your resume, the job description, or interview
+                    details.
                 </div>
-                <textarea 
+                <textarea
                     class="context-textarea"
                     placeholder="Paste your resume, job description, interview context, or any relevant information here..."
                     .value=${this.contextText}
@@ -309,7 +313,8 @@ export class OnboardingView extends LitElement {
                 <div class="emoji">🎉</div>
                 <div class="slide-title">You're All Set!</div>
                 <div class="slide-content">
-                    Cheating Daddy is completely free to use. Just add your Gemini API key and start getting AI-powered assistance in your interviews and meetings!
+                    Cheating Daddy is completely free to use. Just add your Gemini API key and start getting AI-powered assistance in your interviews
+                    and meetings!
                 </div>
             </div>
         `;
@@ -317,42 +322,47 @@ export class OnboardingView extends LitElement {
 
     render() {
         return html`
-            ${this.renderSlide1()}
-            ${this.renderSlide2()}
-            ${this.renderSlide3()}
-            ${this.renderSlide4()}
-            ${this.renderSlide5()}
-            
+            ${this.renderSlide1()} ${this.renderSlide2()} ${this.renderSlide3()} ${this.renderSlide4()} ${this.renderSlide5()}
+
             <div class="navigation">
-                <button 
-                    class="nav-button" 
-                    @click=${this.prevSlide}
-                    ?disabled=${this.currentSlide === 0}
-                >
-                    <svg width="16px" height="16px" stroke-width="1.7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="#ffffff">
+                <button class="nav-button" @click=${this.prevSlide} ?disabled=${this.currentSlide === 0}>
+                    <svg
+                        width="16px"
+                        height="16px"
+                        stroke-width="1.7"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        color="#ffffff"
+                    >
                         <path d="M15 6L9 12L15 18" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
                     </svg>
                 </button>
-                
+
                 <div class="progress-dots">
-                    ${[0, 1, 2, 3, 4].map(index => html`
-                        <div class="dot ${index === this.currentSlide ? 'active' : ''}"></div>
-                    `)}
+                    ${[0, 1, 2, 3, 4].map(index => html` <div class="dot ${index === this.currentSlide ? 'active' : ''}"></div> `)}
                 </div>
-                
-                <button 
-                    class="nav-button" 
-                    @click=${this.nextSlide}
-                >
-                    ${this.currentSlide === 4 ? 'Get Started' : html`
-                        <svg width="16px" height="16px" stroke-width="1.7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="#ffffff">
-                            <path d="M9 6L15 12L9 18" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
-                    `}
+
+                <button class="nav-button" @click=${this.nextSlide}>
+                    ${this.currentSlide === 4
+                        ? 'Get Started'
+                        : html`
+                              <svg
+                                  width="16px"
+                                  height="16px"
+                                  stroke-width="1.7"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  color="#ffffff"
+                              >
+                                  <path d="M9 6L15 12L9 18" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+                              </svg>
+                          `}
                 </button>
             </div>
         `;
     }
 }
 
-customElements.define('onboarding-view', OnboardingView); 
+customElements.define('onboarding-view', OnboardingView);

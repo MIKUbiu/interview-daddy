@@ -118,5 +118,5 @@ function getSystemPrompt(profile, customPrompt = '') {
 
 module.exports = {
     profilePrompts,
-    getSystemPrompt
-}; 
+    getSystemPrompt,
+};

@@ -156,18 +156,8 @@ export class AppHeader extends LitElement {
                                           stroke-width="1.7"
                                           stroke-linecap="round"
                                       ></path>
-                                      <path
-                                          d="M14 19L22 19"
-                                          stroke="currentColor"
-                                          stroke-width="1.7"
-                                          stroke-linecap="round"
-                                      ></path>
-                                      <path
-                                          d="M10 19L2 19"
-                                          stroke="currentColor"
-                                          stroke-width="1.7"
-                                          stroke-linecap="round"
-                                      ></path>
+                                      <path d="M14 19L22 19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+                                      <path d="M10 19L2 19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
                                       <path
                                           d="M12 21C12 19.8954 12.8954 19 14 19"
                                           stroke="currentColor"

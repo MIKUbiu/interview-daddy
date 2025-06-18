@@ -71,7 +71,7 @@ ipcRenderer.on('update-status', (event, status) => {
 async function startCapture(screenshotIntervalSeconds = 5, imageQuality = 'medium') {
     // Store the image quality for manual screenshots
     currentImageQuality = imageQuality;
-    
+
     try {
         if (isMacOS) {
             // On macOS, use SystemAudioDump for audio and getDisplayMedia for screen
@@ -402,16 +402,16 @@ let conversationDB = null;
 async function initConversationStorage() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('ConversationHistory', 1);
-        
+
         request.onerror = () => reject(request.error);
         request.onsuccess = () => {
             conversationDB = request.result;
             resolve(conversationDB);
         };
-        
-        request.onupgradeneeded = (event) => {
+
+        request.onupgradeneeded = event => {
             const db = event.target.result;
-            
+
             // Create sessions store
             if (!db.objectStoreNames.contains('sessions')) {
                 const sessionStore = db.createObjectStore('sessions', { keyPath: 'sessionId' });
@@ -425,17 +425,17 @@ async function saveConversationSession(sessionId, conversationHistory) {
     if (!conversationDB) {
         await initConversationStorage();
     }
-    
+
     const transaction = conversationDB.transaction(['sessions'], 'readwrite');
     const store = transaction.objectStore('sessions');
-    
+
     const sessionData = {
         sessionId: sessionId,
         timestamp: parseInt(sessionId),
         conversationHistory: conversationHistory,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
     };
-    
+
     return new Promise((resolve, reject) => {
         const request = store.put(sessionData);
         request.onerror = () => reject(request.error);
@@ -447,10 +447,10 @@ async function getConversationSession(sessionId) {
     if (!conversationDB) {
         await initConversationStorage();
     }
-    
+
     const transaction = conversationDB.transaction(['sessions'], 'readonly');
     const store = transaction.objectStore('sessions');
-    
+
     return new Promise((resolve, reject) => {
         const request = store.get(sessionId);
         request.onerror = () => reject(request.error);
@@ -462,11 +462,11 @@ async function getAllConversationSessions() {
     if (!conversationDB) {
         await initConversationStorage();
     }
-    
+
     const transaction = conversationDB.transaction(['sessions'], 'readonly');
     const store = transaction.objectStore('sessions');
     const index = store.index('timestamp');
-    
+
     return new Promise((resolve, reject) => {
         const request = index.getAll();
         request.onerror = () => reject(request.error);

@@ -51,28 +51,28 @@ function saveConversationTurn(transcription, aiResponse) {
     if (!currentSessionId) {
         initializeNewSession();
     }
-    
+
     const conversationTurn = {
         timestamp: Date.now(),
         transcription: transcription.trim(),
-        ai_response: aiResponse.trim()
+        ai_response: aiResponse.trim(),
     };
-    
+
     conversationHistory.push(conversationTurn);
     console.log('Saved conversation turn:', conversationTurn);
-    
+
     // Send to renderer to save in IndexedDB
     sendToRenderer('save-conversation-turn', {
         sessionId: currentSessionId,
         turn: conversationTurn,
-        fullHistory: conversationHistory
+        fullHistory: conversationHistory,
     });
 }
 
 function getCurrentSessionData() {
     return {
         sessionId: currentSessionId,
-        history: conversationHistory
+        history: conversationHistory,
     };
 }
 
@@ -105,7 +105,7 @@ function createWindow() {
         },
         { useSystemPicker: true }
     );
-    
+
     mainWindow.setResizable(false);
     mainWindow.setContentProtection(true);
     mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
@@ -119,25 +119,30 @@ function createWindow() {
     // Load custom keybinds or use defaults
     const defaultKeybinds = getDefaultKeybinds();
     let keybinds = defaultKeybinds;
-    
+
     // Try to load saved keybinds
     mainWindow.webContents.once('dom-ready', () => {
-        mainWindow.webContents.executeJavaScript(`
+        mainWindow.webContents
+            .executeJavaScript(
+                `
             try {
                 const saved = localStorage.getItem('customKeybinds');
                 return saved ? JSON.parse(saved) : null;
             } catch (e) {
                 return null;
             }
-        `).then(savedKeybinds => {
-            if (savedKeybinds) {
-                keybinds = { ...defaultKeybinds, ...savedKeybinds };
-            }
-            updateGlobalShortcuts(keybinds, mainWindow);
-        }).catch(() => {
-            // Fallback to default keybinds
-            updateGlobalShortcuts(keybinds, mainWindow);
-        });
+        `
+            )
+            .then(savedKeybinds => {
+                if (savedKeybinds) {
+                    keybinds = { ...defaultKeybinds, ...savedKeybinds };
+                }
+                updateGlobalShortcuts(keybinds, mainWindow);
+            })
+            .catch(() => {
+                // Fallback to default keybinds
+                updateGlobalShortcuts(keybinds, mainWindow);
+            });
     });
 
     // Initialize with default keybinds immediately for early app usage
@@ -169,20 +174,20 @@ function getDefaultKeybinds() {
         toggleVisibility: isMac ? 'Cmd+\\' : 'Ctrl+\\',
         toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
         nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
-        manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S'
+        manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
     };
 }
 
 function updateGlobalShortcuts(keybinds, mainWindow) {
     console.log('Updating global shortcuts with:', keybinds);
-    
+
     // Unregister all existing shortcuts
     globalShortcut.unregisterAll();
-    
+
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.workAreaSize;
     const moveIncrement = Math.floor(Math.min(width, height) * 0.15);
-    
+
     // Register window movement shortcuts
     const movementActions = {
         moveUp: () => {
@@ -204,9 +209,9 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
             if (!mainWindow.isVisible()) return;
             const [currentX, currentY] = mainWindow.getPosition();
             mainWindow.setPosition(currentX + moveIncrement, currentY);
-        }
+        },
     };
-    
+
     // Register each movement shortcut
     Object.keys(movementActions).forEach(action => {
         const keybind = keybinds[action];
@@ -219,7 +224,7 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
             }
         }
     });
-    
+
     // Register toggle visibility shortcut
     if (keybinds.toggleVisibility) {
         try {
@@ -235,7 +240,7 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
             console.error(`Failed to register toggleVisibility (${keybinds.toggleVisibility}):`, error);
         }
     }
-    
+
     // Register toggle click-through shortcut
     if (keybinds.toggleClickThrough) {
         try {
@@ -255,7 +260,7 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
             console.error(`Failed to register toggleClickThrough (${keybinds.toggleClickThrough}):`, error);
         }
     }
-    
+
     // Register next step shortcut
     if (keybinds.nextStep) {
         try {
@@ -277,7 +282,7 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
             console.error(`Failed to register nextStep (${keybinds.nextStep}):`, error);
         }
     }
-    
+
     // Register manual screenshot shortcut
     if (keybinds.manualScreenshot) {
         try {
@@ -305,7 +310,7 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
     });
 
     const systemPrompt = getSystemPrompt(profile, customPrompt);
-    
+
     // Initialize new conversation session
     initializeNewSession();
 
@@ -318,12 +323,12 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
                 },
                 onmessage: function (message) {
                     console.log(message);
-                    
+
                     // Handle transcription input
                     if (message.serverContent?.inputTranscription?.text) {
                         currentTranscription += message.serverContent.inputTranscription.text;
                     }
-                    
+
                     // Handle AI model response
                     if (message.serverContent?.modelTurn?.parts) {
                         for (const part of message.serverContent.modelTurn.parts) {
@@ -336,13 +341,13 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
 
                     if (message.serverContent?.generationComplete) {
                         sendToRenderer('update-response', messageBuffer);
-                        
+
                         // Save conversation turn when we have both transcription and AI response
                         if (currentTranscription && messageBuffer) {
                             saveConversationTurn(currentTranscription, messageBuffer);
                             currentTranscription = ''; // Reset for next turn
                         }
-                        
+
                         messageBuffer = '';
                     }
 
@@ -641,7 +646,7 @@ ipcMain.handle('open-external', async (event, url) => {
     }
 });
 
-ipcMain.handle('toggle-window-visibility', async (event) => {
+ipcMain.handle('toggle-window-visibility', async event => {
     try {
         const windows = BrowserWindow.getAllWindows();
         if (windows.length > 0) {
@@ -660,7 +665,7 @@ ipcMain.handle('toggle-window-visibility', async (event) => {
 });
 
 // Conversation history IPC handlers
-ipcMain.handle('get-current-session', async (event) => {
+ipcMain.handle('get-current-session', async event => {
     try {
         return { success: true, data: getCurrentSessionData() };
     } catch (error) {
@@ -669,7 +674,7 @@ ipcMain.handle('get-current-session', async (event) => {
     }
 });
 
-ipcMain.handle('start-new-session', async (event) => {
+ipcMain.handle('start-new-session', async event => {
     try {
         initializeNewSession();
         return { success: true, sessionId: currentSessionId };

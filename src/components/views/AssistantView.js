@@ -116,7 +116,7 @@ export class AssistantView extends LitElement {
         responses: { type: Array },
         currentResponseIndex: { type: Number },
         selectedProfile: { type: String },
-        onSendText: { type: Function }
+        onSendText: { type: Function },
     };
 
     constructor() {
@@ -151,18 +151,22 @@ export class AssistantView extends LitElement {
     navigateToPreviousResponse() {
         if (this.currentResponseIndex > 0) {
             this.currentResponseIndex--;
-            this.dispatchEvent(new CustomEvent('response-index-changed', {
-                detail: { index: this.currentResponseIndex }
-            }));
+            this.dispatchEvent(
+                new CustomEvent('response-index-changed', {
+                    detail: { index: this.currentResponseIndex },
+                })
+            );
         }
     }
 
     navigateToNextResponse() {
         if (this.currentResponseIndex < this.responses.length - 1) {
             this.currentResponseIndex++;
-            this.dispatchEvent(new CustomEvent('response-index-changed', {
-                detail: { index: this.currentResponseIndex }
-            }));
+            this.dispatchEvent(
+                new CustomEvent('response-index-changed', {
+                    detail: { index: this.currentResponseIndex },
+                })
+            );
         }
     }
 
@@ -206,26 +210,40 @@ export class AssistantView extends LitElement {
             <div class="response-container">${currentResponse}</div>
 
             <div class="text-input-container">
-                <button
-                    class="nav-button"
-                    @click=${this.navigateToPreviousResponse}
-                    ?disabled=${this.currentResponseIndex <= 0}
-                >
-<?xml version="1.0" encoding="UTF-8"?><svg width="24px" height="24px" stroke-width="1.7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="#ffffff"><path d="M15 6L9 12L15 18" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>                </button>
+                <button class="nav-button" @click=${this.navigateToPreviousResponse} ?disabled=${this.currentResponseIndex <= 0}>
+                    <?xml version="1.0" encoding="UTF-8"?><svg
+                        width="24px"
+                        height="24px"
+                        stroke-width="1.7"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        color="#ffffff"
+                    >
+                        <path d="M15 6L9 12L15 18" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </button>
 
                 ${this.responses.length > 0 ? html` <span class="response-counter">${responseCounter}</span> ` : ''}
 
                 <input type="text" id="textInput" placeholder="Type a message to the AI..." @keydown=${this.handleTextKeydown} />
 
-                <button
-                    class="nav-button"
-                    @click=${this.navigateToNextResponse}
-                    ?disabled=${this.currentResponseIndex >= this.responses.length - 1}
-                >
-<?xml version="1.0" encoding="UTF-8"?><svg width="24px" height="24px" stroke-width="1.7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="#ffffff"><path d="M9 6L15 12L9 18" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>                </button>
+                <button class="nav-button" @click=${this.navigateToNextResponse} ?disabled=${this.currentResponseIndex >= this.responses.length - 1}>
+                    <?xml version="1.0" encoding="UTF-8"?><svg
+                        width="24px"
+                        height="24px"
+                        stroke-width="1.7"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        color="#ffffff"
+                    >
+                        <path d="M9 6L15 12L9 18" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </button>
             </div>
         `;
     }
 }
 
-customElements.define('assistant-view', AssistantView); 
+customElements.define('assistant-view', AssistantView);
