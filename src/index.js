@@ -322,7 +322,7 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
                     sendToRenderer('update-status', 'Connected to Gemini - Starting recording...');
                 },
                 onmessage: function (message) {
-                    console.log(message);
+                    console.log('----------------', message);
 
                     // Handle transcription input
                     if (message.serverContent?.inputTranscription?.text) {

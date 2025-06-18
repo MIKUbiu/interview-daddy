@@ -248,6 +248,63 @@ export class CustomizeView extends LitElement {
             border-radius: 4px;
             border: 1px dashed var(--note-border, rgba(255, 255, 255, 0.1));
         }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .checkbox-input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--focus-border-color, #007aff);
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--label-color, rgba(255, 255, 255, 0.9));
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .rate-limit-controls {
+            margin-left: 24px;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+        }
+
+        .rate-limit-controls.enabled {
+            opacity: 1;
+        }
+
+        .rate-limit-reset {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+        }
+
+        .rate-limit-warning {
+            background: var(--warning-background, rgba(255, 193, 7, 0.1));
+            border: 1px solid var(--warning-border, rgba(255, 193, 7, 0.3));
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--warning-color, #ffc107);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.4;
+        }
+
+        .rate-limit-warning-icon {
+            flex-shrink: 0;
+            font-size: 14px;
+        }
     `;
 
     static properties = {
@@ -260,6 +317,10 @@ export class CustomizeView extends LitElement {
         onLanguageChange: { type: Function },
         onScreenshotIntervalChange: { type: Function },
         onImageQualityChange: { type: Function },
+        // Rate limiting properties
+        throttleTokens: { type: Boolean },
+        maxTokensPerMin: { type: Number },
+        throttleAtPercent: { type: Number },
     };
 
     constructor() {
@@ -273,7 +334,14 @@ export class CustomizeView extends LitElement {
         this.onLanguageChange = () => {};
         this.onScreenshotIntervalChange = () => {};
         this.onImageQualityChange = () => {};
+        
+        // Rate limiting defaults
+        this.throttleTokens = true;
+        this.maxTokensPerMin = 1000000;
+        this.throttleAtPercent = 75;
+        
         this.loadKeybinds();
+        this.loadRateLimitSettings();
     }
 
     getProfiles() {
@@ -550,6 +618,57 @@ export class CustomizeView extends LitElement {
         e.target.blur();
     }
 
+    // Rate limiting methods
+    loadRateLimitSettings() {
+        const throttleTokens = localStorage.getItem('throttleTokens');
+        const maxTokensPerMin = localStorage.getItem('maxTokensPerMin');
+        const throttleAtPercent = localStorage.getItem('throttleAtPercent');
+        
+        if (throttleTokens !== null) {
+            this.throttleTokens = throttleTokens === 'true';
+        }
+        if (maxTokensPerMin !== null) {
+            this.maxTokensPerMin = parseInt(maxTokensPerMin, 10) || 1000000;
+        }
+        if (throttleAtPercent !== null) {
+            this.throttleAtPercent = parseInt(throttleAtPercent, 10) || 75;
+        }
+    }
+
+    handleThrottleTokensChange(e) {
+        this.throttleTokens = e.target.checked;
+        localStorage.setItem('throttleTokens', this.throttleTokens.toString());
+        this.requestUpdate();
+    }
+
+    handleMaxTokensChange(e) {
+        const value = parseInt(e.target.value, 10);
+        if (!isNaN(value) && value > 0) {
+            this.maxTokensPerMin = value;
+            localStorage.setItem('maxTokensPerMin', this.maxTokensPerMin.toString());
+        }
+    }
+
+    handleThrottlePercentChange(e) {
+        const value = parseInt(e.target.value, 10);
+        if (!isNaN(value) && value >= 0 && value <= 100) {
+            this.throttleAtPercent = value;
+            localStorage.setItem('throttleAtPercent', this.throttleAtPercent.toString());
+        }
+    }
+
+    resetRateLimitSettings() {
+        this.throttleTokens = true;
+        this.maxTokensPerMin = 1000000;
+        this.throttleAtPercent = 75;
+        
+        localStorage.removeItem('throttleTokens');
+        localStorage.removeItem('maxTokensPerMin');
+        localStorage.removeItem('throttleAtPercent');
+        
+        this.requestUpdate();
+    }
+
     render() {
         const profiles = this.getProfiles();
         const languages = this.getLanguages();
@@ -730,6 +849,84 @@ export class CustomizeView extends LitElement {
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Rate Limiting Section -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <span>Rate Limiting</span>
+                    </div>
+
+                    <div class="rate-limit-warning">
+                        <span class="rate-limit-warning-icon">⚠️</span>
+                        <span><strong>Warning:</strong> Don't mess with these settings if you don't know what this is about. Incorrect rate limiting settings may cause the application to stop working properly or hit API limits unexpectedly.</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="checkbox-group">
+                            <input
+                                type="checkbox"
+                                class="checkbox-input"
+                                id="throttle-tokens"
+                                .checked=${this.throttleTokens}
+                                @change=${this.handleThrottleTokensChange}
+                            />
+                            <label for="throttle-tokens" class="checkbox-label">
+                                Throttle tokens when close to rate limit
+                            </label>
+                        </div>
+
+                        <div class="rate-limit-controls ${this.throttleTokens ? 'enabled' : ''}">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Max Allowed Tokens Per Minute</label>
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        .value=${this.maxTokensPerMin}
+                                        min="1000"
+                                        max="10000000"
+                                        step="1000"
+                                        @input=${this.handleMaxTokensChange}
+                                        ?disabled=${!this.throttleTokens}
+                                    />
+                                    <div class="form-description">
+                                        Maximum number of tokens allowed per minute before throttling kicks in
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Throttle At Percent</label>
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        .value=${this.throttleAtPercent}
+                                        min="1"
+                                        max="99"
+                                        step="1"
+                                        @input=${this.handleThrottlePercentChange}
+                                        ?disabled=${!this.throttleTokens}
+                                    />
+                                    <div class="form-description">
+                                        Start throttling when this percentage of the limit is reached (${this.throttleAtPercent}% = ${Math.floor(this.maxTokensPerMin * this.throttleAtPercent / 100)} tokens)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="rate-limit-reset">
+                                <button 
+                                    class="reset-keybinds-button" 
+                                    @click=${this.resetRateLimitSettings}
+                                    ?disabled=${!this.throttleTokens}
+                                >
+                                    Reset
+                                </button>
+                                <div class="form-description" style="margin-top: 8px;">
+                                    Reset rate limiting settings to default values
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="settings-note">
