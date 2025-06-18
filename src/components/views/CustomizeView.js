@@ -334,12 +334,12 @@ export class CustomizeView extends LitElement {
         this.onLanguageChange = () => {};
         this.onScreenshotIntervalChange = () => {};
         this.onImageQualityChange = () => {};
-        
+
         // Rate limiting defaults
         this.throttleTokens = true;
         this.maxTokensPerMin = 1000000;
         this.throttleAtPercent = 75;
-        
+
         this.loadKeybinds();
         this.loadRateLimitSettings();
     }
@@ -623,7 +623,7 @@ export class CustomizeView extends LitElement {
         const throttleTokens = localStorage.getItem('throttleTokens');
         const maxTokensPerMin = localStorage.getItem('maxTokensPerMin');
         const throttleAtPercent = localStorage.getItem('throttleAtPercent');
-        
+
         if (throttleTokens !== null) {
             this.throttleTokens = throttleTokens === 'true';
         }
@@ -661,11 +661,11 @@ export class CustomizeView extends LitElement {
         this.throttleTokens = true;
         this.maxTokensPerMin = 1000000;
         this.throttleAtPercent = 75;
-        
+
         localStorage.removeItem('throttleTokens');
         localStorage.removeItem('maxTokensPerMin');
         localStorage.removeItem('throttleAtPercent');
-        
+
         this.requestUpdate();
     }
 
@@ -859,7 +859,10 @@ export class CustomizeView extends LitElement {
 
                     <div class="rate-limit-warning">
                         <span class="rate-limit-warning-icon">⚠️</span>
-                        <span><strong>Warning:</strong> Don't mess with these settings if you don't know what this is about. Incorrect rate limiting settings may cause the application to stop working properly or hit API limits unexpectedly.</span>
+                        <span
+                            ><strong>Warning:</strong> Don't mess with these settings if you don't know what this is about. Incorrect rate limiting
+                            settings may cause the application to stop working properly or hit API limits unexpectedly.</span
+                        >
                     </div>
 
                     <div class="form-grid">
@@ -871,9 +874,7 @@ export class CustomizeView extends LitElement {
                                 .checked=${this.throttleTokens}
                                 @change=${this.handleThrottleTokensChange}
                             />
-                            <label for="throttle-tokens" class="checkbox-label">
-                                Throttle tokens when close to rate limit
-                            </label>
+                            <label for="throttle-tokens" class="checkbox-label"> Throttle tokens when close to rate limit </label>
                         </div>
 
                         <div class="rate-limit-controls ${this.throttleTokens ? 'enabled' : ''}">
@@ -890,9 +891,7 @@ export class CustomizeView extends LitElement {
                                         @input=${this.handleMaxTokensChange}
                                         ?disabled=${!this.throttleTokens}
                                     />
-                                    <div class="form-description">
-                                        Maximum number of tokens allowed per minute before throttling kicks in
-                                    </div>
+                                    <div class="form-description">Maximum number of tokens allowed per minute before throttling kicks in</div>
                                 </div>
 
                                 <div class="form-group">
@@ -908,22 +907,17 @@ export class CustomizeView extends LitElement {
                                         ?disabled=${!this.throttleTokens}
                                     />
                                     <div class="form-description">
-                                        Start throttling when this percentage of the limit is reached (${this.throttleAtPercent}% = ${Math.floor(this.maxTokensPerMin * this.throttleAtPercent / 100)} tokens)
+                                        Start throttling when this percentage of the limit is reached (${this.throttleAtPercent}% =
+                                        ${Math.floor((this.maxTokensPerMin * this.throttleAtPercent) / 100)} tokens)
                                     </div>
                                 </div>
                             </div>
 
                             <div class="rate-limit-reset">
-                                <button 
-                                    class="reset-keybinds-button" 
-                                    @click=${this.resetRateLimitSettings}
-                                    ?disabled=${!this.throttleTokens}
-                                >
+                                <button class="reset-keybinds-button" @click=${this.resetRateLimitSettings} ?disabled=${!this.throttleTokens}>
                                     Reset
                                 </button>
-                                <div class="form-description" style="margin-top: 8px;">
-                                    Reset rate limiting settings to default values
-                                </div>
+                                <div class="form-description" style="margin-top: 8px;">Reset rate limiting settings to default values</div>
                             </div>
                         </div>
                     </div>

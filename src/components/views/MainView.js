@@ -79,7 +79,7 @@ export class MainView extends LitElement {
 
     static properties = {
         onStart: { type: Function },
-        onAPIKeyHelp: { type: Function }
+        onAPIKeyHelp: { type: Function },
     };
 
     constructor() {
@@ -127,4 +127,4 @@ export class MainView extends LitElement {
     }
 }
 
-customElements.define('main-view', MainView); 
+customElements.define('main-view', MainView);
