@@ -2,6 +2,12 @@ import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
 
 export class HelpView extends LitElement {
     static styles = css`
+        * {
+            font-family: 'Inter', sans-serif;
+            cursor: default;
+            user-select: none;
+        }
+
         :host {
             display: block;
             padding: 16px;
@@ -255,6 +261,9 @@ export class HelpView extends LitElement {
                         <span>Community & Support</span>
                     </div>
                     <div class="community-links">
+                        <div class="community-link" @click=${() => this.handleExternalLinkClick('https://cheatingdaddy.com')}>
+                            🌐 Official Website
+                        </div>
                         <div class="community-link" @click=${() => this.handleExternalLinkClick('https://github.com/sohzm/cheating-daddy')}>
                             📂 GitHub Repository
                         </div>

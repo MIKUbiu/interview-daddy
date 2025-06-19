@@ -8,6 +8,11 @@ export class AssistantView extends LitElement {
             flex-direction: column;
         }
 
+        * {
+            font-family: 'Inter', sans-serif;
+            cursor: default;
+        }
+
         .response-container {
             height: calc(100% - 60px);
             overflow-y: auto;

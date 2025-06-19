@@ -5,6 +5,18 @@ module.exports = {
     packagerConfig: {
         asar: true,
         extraResource: ['./src/assets/SystemAudioDump'],
+        name: 'Cheating Daddy',
+        icon: 'src/assets/logo',
+        // use `security find-identity -v -p codesigning` to find your identity
+        // for macos signing
+        // also fuck apple
+        // osxSign: {
+        //    identity: '<paste your identity here>',
+        //    'hardened-runtime': true,
+        //    'gatekeeper-assess': false,
+        //    'entitlements': 'entitlements.plist',
+        //    'entitlements-inherit': 'entitlements.plist',
+        //},
     },
     rebuildConfig: {},
     makers: [

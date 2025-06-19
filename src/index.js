@@ -17,6 +17,7 @@ let systemAudioProc = null;
 let audioIntervalTimer = null;
 let mouseEventsIgnored = false;
 let messageBuffer = '';
+let isInitializingSession = false;
 
 // Add conversation tracking variables
 let currentSessionId = null;
@@ -186,7 +187,7 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
 
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.workAreaSize;
-    const moveIncrement = Math.floor(Math.min(width, height) * 0.15);
+    const moveIncrement = Math.floor(Math.min(width, height) * 0.10);
 
     // Register window movement shortcuts
     const movementActions = {
@@ -304,6 +305,14 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
 }
 
 async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'interview', language = 'en-US') {
+    if (isInitializingSession) {
+        console.log('Session initialization already in progress');
+        return false;
+    }
+
+    isInitializingSession = true;
+    sendToRenderer('session-initializing', true);
+
     const client = new GoogleGenAI({
         vertexai: false,
         apiKey: apiKey,
@@ -376,9 +385,13 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
         });
 
         geminiSession = session;
+        isInitializingSession = false;
+        sendToRenderer('session-initializing', false);
         return true;
     } catch (error) {
         console.error('Failed to initialize Gemini session:', error);
+        isInitializingSession = false;
+        sendToRenderer('session-initializing', false);
         return false;
     }
 }
@@ -390,8 +403,42 @@ function sendToRenderer(channel, data) {
     }
 }
 
-function startMacOSAudioCapture() {
+function killExistingSystemAudioDump() {
+    return new Promise((resolve) => {
+        console.log('Checking for existing SystemAudioDump processes...');
+        
+        // Kill any existing SystemAudioDump processes
+        const killProc = spawn('pkill', ['-f', 'SystemAudioDump'], {
+            stdio: 'ignore'
+        });
+        
+        killProc.on('close', (code) => {
+            if (code === 0) {
+                console.log('Killed existing SystemAudioDump processes');
+            } else {
+                console.log('No existing SystemAudioDump processes found');
+            }
+            resolve();
+        });
+        
+        killProc.on('error', (err) => {
+            console.log('Error checking for existing processes (this is normal):', err.message);
+            resolve();
+        });
+        
+        // Timeout after 2 seconds
+        setTimeout(() => {
+            killProc.kill();
+            resolve();
+        }, 2000);
+    });
+}
+
+async function startMacOSAudioCapture() {
     if (process.platform !== 'darwin') return false;
+
+    // Kill any existing SystemAudioDump processes first
+    await killExistingSystemAudioDump();
 
     console.log('Starting macOS audio capture with SystemAudioDump...');
 
@@ -590,7 +637,7 @@ ipcMain.handle('start-macos-audio', async event => {
     }
 
     try {
-        const success = startMacOSAudioCapture();
+        const success = await startMacOSAudioCapture();
         return { success };
     } catch (error) {
         console.error('Error starting macOS audio capture:', error);

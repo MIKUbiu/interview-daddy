@@ -2,6 +2,12 @@ import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
 
 export class CustomizeView extends LitElement {
     static styles = css`
+        * {
+            font-family: 'Inter', sans-serif;
+            cursor: default;
+            user-select: none;
+        }
+
         :host {
             display: block;
             padding: 16px;

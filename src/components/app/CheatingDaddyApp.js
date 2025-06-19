@@ -19,6 +19,7 @@ export class CheatingDaddyApp extends LitElement {
             margin: 0px;
             padding: 0px;
             cursor: default;
+            user-select: none;
         }
 
         :host {

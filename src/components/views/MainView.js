@@ -2,6 +2,12 @@ import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
 
 export class MainView extends LitElement {
     static styles = css`
+        * {
+            font-family: 'Inter', sans-serif;
+            cursor: default;
+            user-select: none;
+        }
+
         .welcome {
             font-size: 24px;
             margin-bottom: 8px;
@@ -55,6 +61,15 @@ export class MainView extends LitElement {
             border-color: var(--start-button-hover-border);
         }
 
+        .start-button.initializing {
+            opacity: 0.5;
+        }
+
+        .start-button.initializing:hover {
+            background: var(--start-button-background);
+            border-color: var(--start-button-border);
+        }
+
         .description {
             color: var(--description-color);
             font-size: 14px;
@@ -80,12 +95,26 @@ export class MainView extends LitElement {
     static properties = {
         onStart: { type: Function },
         onAPIKeyHelp: { type: Function },
+        isInitializing: { type: Boolean },
     };
 
     constructor() {
         super();
         this.onStart = () => {};
         this.onAPIKeyHelp = () => {};
+        this.isInitializing = false;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        window.electron?.ipcRenderer?.on('session-initializing', (event, isInitializing) => {
+            this.isInitializing = isInitializing;
+        });
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        window.electron?.ipcRenderer?.removeAllListeners('session-initializing');
     }
 
     handleInput(e) {
@@ -93,6 +122,9 @@ export class MainView extends LitElement {
     }
 
     handleStartClick() {
+        if (this.isInitializing) {
+            return;
+        }
         this.onStart();
     }
 
@@ -117,7 +149,7 @@ export class MainView extends LitElement {
                     .value=${localStorage.getItem('apiKey') || ''}
                     @input=${this.handleInput}
                 />
-                <button @click=${this.handleStartClick} class="start-button">Start Session</button>
+                <button @click=${this.handleStartClick} class="start-button ${this.isInitializing ? 'initializing' : ''}">Start Session</button>
             </div>
             <p class="description">
                 dont have an api key?

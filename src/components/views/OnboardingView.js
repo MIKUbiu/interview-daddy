@@ -2,6 +2,12 @@ import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
 
 export class OnboardingView extends LitElement {
     static styles = css`
+        * {
+            font-family: 'Inter', sans-serif;
+            cursor: default;
+            user-select: none;
+        }
+
         :host {
             display: flex;
             flex-direction: column;
