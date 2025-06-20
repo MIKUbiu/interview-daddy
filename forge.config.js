@@ -10,14 +10,20 @@ module.exports = {
         // use `security find-identity -v -p codesigning` to find your identity
         // for macos signing
         // also fuck apple
-        osxSign: {
-            identity: '<paste your identity here>',
-            optionsForFile: (filePath) => {
-                return {
-                    entitlements: 'entitlements.plist',
-                };
-            },
-        },
+        // osxSign: {
+        //    identity: '<paste your identity here>',
+        //   optionsForFile: (filePath) => {
+        //       return {
+        //           entitlements: 'entitlements.plist',
+        //       };
+        //   },
+        // },
+        // notarize if off cuz i ran this for 6 hours and it still didnt finish
+        // osxNotarize: {
+        //    appleId: 'your apple id',
+        //    appleIdPassword: 'app specific password',
+        //    teamId: 'your team id',
+        // },
     },
     rebuildConfig: {},
     makers: [
