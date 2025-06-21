@@ -103,6 +103,59 @@ export class AppHeader extends LitElement {
         this.onCloseClick = () => {};
         this.onHideToggleClick = () => {};
         this.isClickThrough = false;
+        this._timerInterval = null;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this._startTimer();
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this._stopTimer();
+    }
+
+    updated(changedProperties) {
+        super.updated(changedProperties);
+
+        // Start/stop timer based on view change
+        if (changedProperties.has('currentView')) {
+            if (this.currentView === 'assistant' && this.startTime) {
+                this._startTimer();
+            } else {
+                this._stopTimer();
+            }
+        }
+
+        // Start timer when startTime is set
+        if (changedProperties.has('startTime')) {
+            if (this.startTime && this.currentView === 'assistant') {
+                this._startTimer();
+            } else if (!this.startTime) {
+                this._stopTimer();
+            }
+        }
+    }
+
+    _startTimer() {
+        // Clear any existing timer
+        this._stopTimer();
+
+        // Only start timer if we're in assistant view and have a start time
+        if (this.currentView === 'assistant' && this.startTime) {
+            this._timerInterval = setInterval(() => {
+                // Trigger a re-render by requesting an update
+                this.requestUpdate();
+            }, 1000); // Update every second
+        }
+    }
+
+    _stopTimer() {
+        if (this._timerInterval) {
+            clearInterval(this._timerInterval);
+            this._timerInterval = null;
+        }
     }
 
     getViewTitle() {

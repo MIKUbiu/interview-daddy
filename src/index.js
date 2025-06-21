@@ -187,7 +187,7 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
 
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.workAreaSize;
-    const moveIncrement = Math.floor(Math.min(width, height) * 0.10);
+    const moveIncrement = Math.floor(Math.min(width, height) * 0.1);
 
     // Register window movement shortcuts
     const movementActions = {
@@ -318,7 +318,11 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
         apiKey: apiKey,
     });
 
-    const systemPrompt = getSystemPrompt(profile, customPrompt);
+    // Get enabled tools first to determine Google Search status
+    const enabledTools = await getEnabledTools();
+    const googleSearchEnabled = enabledTools.some(tool => tool.googleSearch);
+
+    const systemPrompt = getSystemPrompt(profile, customPrompt, googleSearchEnabled);
 
     // Initialize new conversation session
     initializeNewSession();
@@ -375,6 +379,7 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
             },
             config: {
                 responseModalities: ['TEXT'],
+                tools: enabledTools,
                 inputAudioTranscription: {},
                 contextWindowCompression: { slidingWindow: {} },
                 speechConfig: { languageCode: language },
@@ -403,16 +408,66 @@ function sendToRenderer(channel, data) {
     }
 }
 
+async function getEnabledTools() {
+    const tools = [];
+
+    // Check if Google Search is enabled (default: true)
+    const googleSearchEnabled = await getStoredSetting('googleSearchEnabled', 'true');
+    console.log('Google Search enabled:', googleSearchEnabled);
+
+    if (googleSearchEnabled === 'true') {
+        tools.push({ googleSearch: {} });
+        console.log('Added Google Search tool');
+    } else {
+        console.log('Google Search tool disabled');
+    }
+
+    return tools;
+}
+
+async function getStoredSetting(key, defaultValue) {
+    try {
+        const windows = BrowserWindow.getAllWindows();
+        if (windows.length > 0) {
+            // Wait a bit for the renderer to be ready
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Try to get setting from renderer process localStorage
+            const value = await windows[0].webContents.executeJavaScript(`
+                (function() {
+                    try {
+                        if (typeof localStorage === 'undefined') {
+                            console.log('localStorage not available yet for ${key}');
+                            return '${defaultValue}';
+                        }
+                        const stored = localStorage.getItem('${key}');
+                        console.log('Retrieved setting ${key}:', stored);
+                        return stored || '${defaultValue}';
+                    } catch (e) {
+                        console.error('Error accessing localStorage for ${key}:', e);
+                        return '${defaultValue}';
+                    }
+                })()
+            `);
+            return value;
+        }
+    } catch (error) {
+        console.error('Error getting stored setting for', key, ':', error.message);
+    }
+    console.log('Using default value for', key, ':', defaultValue);
+    return defaultValue;
+}
+
 function killExistingSystemAudioDump() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         console.log('Checking for existing SystemAudioDump processes...');
-        
+
         // Kill any existing SystemAudioDump processes
         const killProc = spawn('pkill', ['-f', 'SystemAudioDump'], {
-            stdio: 'ignore'
+            stdio: 'ignore',
         });
-        
-        killProc.on('close', (code) => {
+
+        killProc.on('close', code => {
             if (code === 0) {
                 console.log('Killed existing SystemAudioDump processes');
             } else {
@@ -420,12 +475,12 @@ function killExistingSystemAudioDump() {
             }
             resolve();
         });
-        
-        killProc.on('error', (err) => {
+
+        killProc.on('error', err => {
             console.log('Error checking for existing processes (this is normal):', err.message);
             resolve();
         });
-        
+
         // Timeout after 2 seconds
         setTimeout(() => {
             killProc.kill();
@@ -727,6 +782,18 @@ ipcMain.handle('start-new-session', async event => {
         return { success: true, sessionId: currentSessionId };
     } catch (error) {
         console.error('Error starting new session:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('update-google-search-setting', async (event, enabled) => {
+    try {
+        console.log('Google Search setting updated to:', enabled);
+        // The setting is already saved in localStorage by the renderer
+        // This is just for logging/confirmation
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating Google Search setting:', error);
         return { success: false, error: error.message };
     }
 });

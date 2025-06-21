@@ -327,6 +327,8 @@ export class CustomizeView extends LitElement {
         throttleTokens: { type: Boolean },
         maxTokensPerMin: { type: Number },
         throttleAtPercent: { type: Number },
+        // Google Search property
+        googleSearchEnabled: { type: Boolean },
     };
 
     constructor() {
@@ -346,8 +348,12 @@ export class CustomizeView extends LitElement {
         this.maxTokensPerMin = 1000000;
         this.throttleAtPercent = 75;
 
+        // Google Search default
+        this.googleSearchEnabled = true;
+
         this.loadKeybinds();
         this.loadRateLimitSettings();
+        this.loadGoogleSearchSettings();
     }
 
     getProfiles() {
@@ -675,6 +681,30 @@ export class CustomizeView extends LitElement {
         this.requestUpdate();
     }
 
+    loadGoogleSearchSettings() {
+        const googleSearchEnabled = localStorage.getItem('googleSearchEnabled');
+        if (googleSearchEnabled !== null) {
+            this.googleSearchEnabled = googleSearchEnabled === 'true';
+        }
+    }
+
+    async handleGoogleSearchChange(e) {
+        this.googleSearchEnabled = e.target.checked;
+        localStorage.setItem('googleSearchEnabled', this.googleSearchEnabled.toString());
+
+        // Notify main process if available
+        if (window.require) {
+            try {
+                const { ipcRenderer } = window.require('electron');
+                await ipcRenderer.invoke('update-google-search-setting', this.googleSearchEnabled);
+            } catch (error) {
+                console.error('Failed to notify main process:', error);
+            }
+        }
+
+        this.requestUpdate();
+    }
+
     render() {
         const profiles = this.getProfiles();
         const languages = this.getLanguages();
@@ -925,6 +955,30 @@ export class CustomizeView extends LitElement {
                                 </button>
                                 <div class="form-description" style="margin-top: 8px;">Reset rate limiting settings to default values</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Search Section -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <span>Google Search</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="checkbox-group">
+                            <input
+                                type="checkbox"
+                                class="checkbox-input"
+                                id="google-search-enabled"
+                                .checked=${this.googleSearchEnabled}
+                                @change=${this.handleGoogleSearchChange}
+                            />
+                            <label for="google-search-enabled" class="checkbox-label"> Enable Google Search </label>
+                        </div>
+                        <div class="form-description" style="margin-left: 24px; margin-top: -8px;">
+                            Allow the AI to search Google for up-to-date information and facts during conversations
+                            <br /><strong>Note:</strong> Changes take effect when starting a new AI session
                         </div>
                     </div>
                 </div>

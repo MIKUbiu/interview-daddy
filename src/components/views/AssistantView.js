@@ -16,12 +16,133 @@ export class AssistantView extends LitElement {
         .response-container {
             height: calc(100% - 60px);
             overflow-y: auto;
-            white-space: pre-wrap;
             border-radius: 10px;
             font-size: 20px;
             line-height: 1.6;
             background: var(--main-content-background);
             padding: 16px;
+        }
+
+        /* Markdown styling */
+        .response-container h1,
+        .response-container h2,
+        .response-container h3,
+        .response-container h4,
+        .response-container h5,
+        .response-container h6 {
+            margin: 1.2em 0 0.6em 0;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .response-container h1 {
+            font-size: 1.8em;
+        }
+        .response-container h2 {
+            font-size: 1.5em;
+        }
+        .response-container h3 {
+            font-size: 1.3em;
+        }
+        .response-container h4 {
+            font-size: 1.1em;
+        }
+        .response-container h5 {
+            font-size: 1em;
+        }
+        .response-container h6 {
+            font-size: 0.9em;
+        }
+
+        .response-container p {
+            margin: 0.8em 0;
+            color: var(--text-color);
+        }
+
+        .response-container ul,
+        .response-container ol {
+            margin: 0.8em 0;
+            padding-left: 2em;
+            color: var(--text-color);
+        }
+
+        .response-container li {
+            margin: 0.4em 0;
+        }
+
+        .response-container blockquote {
+            margin: 1em 0;
+            padding: 0.5em 1em;
+            border-left: 4px solid var(--focus-border-color);
+            background: rgba(0, 122, 255, 0.1);
+            font-style: italic;
+        }
+
+        .response-container code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85em;
+        }
+
+        .response-container pre {
+            background: var(--input-background);
+            border: 1px solid var(--button-border);
+            border-radius: 6px;
+            padding: 1em;
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+
+        .response-container pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .response-container a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        .response-container a:hover {
+            text-decoration: underline;
+        }
+
+        .response-container strong,
+        .response-container b {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .response-container em,
+        .response-container i {
+            font-style: italic;
+        }
+
+        .response-container hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 2em 0;
+        }
+
+        .response-container table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+        }
+
+        .response-container th,
+        .response-container td {
+            border: 1px solid var(--border-color);
+            padding: 0.5em;
+            text-align: left;
+        }
+
+        .response-container th {
+            background: var(--input-background);
+            font-weight: 600;
         }
 
         .response-container::-webkit-scrollbar {
@@ -149,6 +270,28 @@ export class AssistantView extends LitElement {
             : `Hey, Im listening to your ${profileNames[this.selectedProfile] || 'session'}?`;
     }
 
+    renderMarkdown(content) {
+        // Check if marked is available
+        if (typeof window !== 'undefined' && window.marked) {
+            try {
+                // Configure marked for better security and formatting
+                window.marked.setOptions({
+                    breaks: true,
+                    gfm: true,
+                    sanitize: false, // We trust the AI responses
+                });
+                const rendered = window.marked.parse(content);
+                console.log('Markdown rendered successfully');
+                return rendered;
+            } catch (error) {
+                console.warn('Error parsing markdown:', error);
+                return content; // Fallback to plain text
+            }
+        }
+        console.log('Marked not available, using plain text');
+        return content; // Fallback if marked is not available
+    }
+
     getResponseCounter() {
         return this.responses.length > 0 ? `${this.currentResponseIndex + 1}/${this.responses.length}` : '';
     }
@@ -200,10 +343,30 @@ export class AssistantView extends LitElement {
         }, 0);
     }
 
+    firstUpdated() {
+        super.firstUpdated();
+        this.updateResponseContent();
+    }
+
     updated(changedProperties) {
         super.updated(changedProperties);
         if (changedProperties.has('responses') || changedProperties.has('currentResponseIndex')) {
+            this.updateResponseContent();
             this.scrollToBottom();
+        }
+    }
+
+    updateResponseContent() {
+        console.log('updateResponseContent called');
+        const container = this.shadowRoot.querySelector('#responseContainer');
+        if (container) {
+            const currentResponse = this.getCurrentResponse();
+            console.log('Current response:', currentResponse);
+            const renderedResponse = this.renderMarkdown(currentResponse);
+            console.log('Rendered response:', renderedResponse);
+            container.innerHTML = renderedResponse;
+        } else {
+            console.log('Response container not found');
         }
     }
 
@@ -212,7 +375,7 @@ export class AssistantView extends LitElement {
         const responseCounter = this.getResponseCounter();
 
         return html`
-            <div class="response-container">${currentResponse}</div>
+            <div class="response-container" id="responseContainer"></div>
 
             <div class="text-input-container">
                 <button class="nav-button" @click=${this.navigateToPreviousResponse} ?disabled=${this.currentResponseIndex <= 0}>
