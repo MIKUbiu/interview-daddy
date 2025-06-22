@@ -6,6 +6,7 @@ import { HelpView } from '../views/HelpView.js';
 import { HistoryView } from '../views/HistoryView.js';
 import { AssistantView } from '../views/AssistantView.js';
 import { OnboardingView } from '../views/OnboardingView.js';
+import { AdvancedView } from '../views/AdvancedView.js';
 
 export class CheatingDaddyApp extends LitElement {
     static styles = css`
@@ -114,6 +115,7 @@ export class CheatingDaddyApp extends LitElement {
         selectedScreenshotInterval: { type: String },
         selectedImageQuality: { type: String },
         layoutMode: { type: String },
+        advancedMode: { type: Boolean },
         _viewInstances: { type: Object, state: true },
         _isClickThrough: { state: true },
     };
@@ -132,6 +134,7 @@ export class CheatingDaddyApp extends LitElement {
         this.selectedScreenshotInterval = localStorage.getItem('selectedScreenshotInterval') || '5';
         this.selectedImageQuality = localStorage.getItem('selectedImageQuality') || 'medium';
         this.layoutMode = localStorage.getItem('layoutMode') || 'normal';
+        this.advancedMode = localStorage.getItem('advancedMode') === 'true';
         this.responses = [];
         this.currentResponseIndex = -1;
         this._viewInstances = new Map();
@@ -197,6 +200,11 @@ export class CheatingDaddyApp extends LitElement {
 
     handleHistoryClick() {
         this.currentView = 'history';
+        this.requestUpdate();
+    }
+
+    handleAdvancedClick() {
+        this.currentView = 'advanced';
         this.requestUpdate();
     }
 
@@ -274,6 +282,16 @@ export class CheatingDaddyApp extends LitElement {
         localStorage.setItem('selectedImageQuality', quality);
     }
 
+    handleAdvancedModeChange(advancedMode) {
+        this.advancedMode = advancedMode;
+        localStorage.setItem('advancedMode', advancedMode.toString());
+    }
+
+    handleBackClick() {
+        this.currentView = 'main';
+        this.requestUpdate();
+    }
+
     // Help view event handlers
     async handleExternalLinkClick(url) {
         if (window.require) {
@@ -339,6 +357,9 @@ export class CheatingDaddyApp extends LitElement {
         if (changedProperties.has('layoutMode')) {
             this.updateLayoutMode();
         }
+        if (changedProperties.has('advancedMode')) {
+            localStorage.setItem('advancedMode', this.advancedMode.toString());
+        }
     }
 
     renderCurrentView() {
@@ -368,11 +389,13 @@ export class CheatingDaddyApp extends LitElement {
                         .selectedScreenshotInterval=${this.selectedScreenshotInterval}
                         .selectedImageQuality=${this.selectedImageQuality}
                         .layoutMode=${this.layoutMode}
+                        .advancedMode=${this.advancedMode}
                         .onProfileChange=${profile => this.handleProfileChange(profile)}
                         .onLanguageChange=${language => this.handleLanguageChange(language)}
                         .onScreenshotIntervalChange=${interval => this.handleScreenshotIntervalChange(interval)}
                         .onImageQualityChange=${quality => this.handleImageQualityChange(quality)}
                         .onLayoutModeChange=${layoutMode => this.handleLayoutModeChange(layoutMode)}
+                        .onAdvancedModeChange=${advancedMode => this.handleAdvancedModeChange(advancedMode)}
                     ></customize-view>
                 `;
 
@@ -381,6 +404,9 @@ export class CheatingDaddyApp extends LitElement {
 
             case 'history':
                 return html` <history-view></history-view> `;
+
+            case 'advanced':
+                return html` <advanced-view></advanced-view> `;
 
             case 'assistant':
                 return html`
@@ -410,10 +436,13 @@ export class CheatingDaddyApp extends LitElement {
                         .currentView=${this.currentView}
                         .statusText=${this.statusText}
                         .startTime=${this.startTime}
+                        .advancedMode=${this.advancedMode}
                         .onCustomizeClick=${() => this.handleCustomizeClick()}
                         .onHelpClick=${() => this.handleHelpClick()}
                         .onHistoryClick=${() => this.handleHistoryClick()}
+                        .onAdvancedClick=${() => this.handleAdvancedClick()}
                         .onCloseClick=${() => this.handleClose()}
+                        .onBackClick=${() => this.handleBackClick()}
                         .onHideToggleClick=${() => this.handleHideToggle()}
                         ?isClickThrough=${this._isClickThrough}
                     ></app-header>

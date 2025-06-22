@@ -3,24 +3,29 @@ import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
 export class CustomizeView extends LitElement {
     static styles = css`
         * {
-            font-family: 'Inter', sans-serif;
+            font-family:
+                'Inter',
+                -apple-system,
+                BlinkMacSystemFont,
+                sans-serif;
             cursor: default;
             user-select: none;
         }
 
         :host {
             display: block;
-            padding: 16px;
+            padding: 12px;
             margin: 0 auto;
+            max-width: 700px;
         }
 
         .settings-container {
             display: grid;
-            gap: 16px;
+            gap: 12px;
         }
 
         .settings-section {
-            background: var(--card-background, rgba(255, 255, 255, 0.05));
+            background: var(--card-background, rgba(255, 255, 255, 0.04));
             border: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
             border-radius: 6px;
             padding: 16px;
@@ -32,9 +37,19 @@ export class CustomizeView extends LitElement {
             align-items: center;
             gap: 8px;
             margin-bottom: 12px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: var(--accent-color, #007aff);
+            border-radius: 1.5px;
         }
 
         .form-grid {
@@ -67,7 +82,7 @@ export class CustomizeView extends LitElement {
 
         .form-label {
             font-weight: 500;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--label-color, rgba(255, 255, 255, 0.9));
             display: flex;
             align-items: center;
@@ -76,7 +91,7 @@ export class CustomizeView extends LitElement {
 
         .form-description {
             font-size: 11px;
-            color: var(--description-color, rgba(255, 255, 255, 0.6));
+            color: var(--description-color, rgba(255, 255, 255, 0.5));
             line-height: 1.3;
             margin-top: 2px;
         }
@@ -84,12 +99,13 @@ export class CustomizeView extends LitElement {
         .form-control {
             background: var(--input-background, rgba(0, 0, 0, 0.3));
             color: var(--text-color);
-            border: 1px solid var(--input-border, rgba(255, 255, 255, 0.2));
-            padding: 8px 12px;
+            border: 1px solid var(--input-border, rgba(255, 255, 255, 0.15));
+            padding: 8px 10px;
             border-radius: 4px;
-            font-size: 13px;
-            transition: all 0.2s ease;
+            font-size: 12px;
+            transition: all 0.15s ease;
             min-height: 16px;
+            font-weight: 400;
         }
 
         .form-control:focus {
@@ -100,7 +116,8 @@ export class CustomizeView extends LitElement {
         }
 
         .form-control:hover:not(:focus) {
-            border-color: var(--input-hover-border, rgba(255, 255, 255, 0.3));
+            border-color: var(--input-hover-border, rgba(255, 255, 255, 0.2));
+            background: var(--input-hover-background, rgba(0, 0, 0, 0.35));
         }
 
         select.form-control {
@@ -109,13 +126,13 @@ export class CustomizeView extends LitElement {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 8px center;
             background-repeat: no-repeat;
-            background-size: 14px;
+            background-size: 12px;
             padding-right: 28px;
         }
 
         textarea.form-control {
             resize: vertical;
-            min-height: 80px;
+            min-height: 60px;
             line-height: 1.4;
             font-family: inherit;
         }
@@ -134,12 +151,18 @@ export class CustomizeView extends LitElement {
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            font-size: 11px;
-            color: var(--success-color, #28a745);
-            background: var(--success-background, rgba(40, 167, 69, 0.1));
+            font-size: 10px;
+            color: var(--success-color, #34d399);
+            background: var(--success-background, rgba(52, 211, 153, 0.1));
             padding: 2px 6px;
             border-radius: 3px;
             font-weight: 500;
+            border: 1px solid var(--success-border, rgba(52, 211, 153, 0.2));
+        }
+
+        .current-selection::before {
+            content: '✓';
+            font-weight: 600;
         }
 
         .keybind-input {
@@ -147,6 +170,7 @@ export class CustomizeView extends LitElement {
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
             text-align: center;
             letter-spacing: 0.5px;
+            font-weight: 500;
         }
 
         .keybind-input:focus {
@@ -162,18 +186,18 @@ export class CustomizeView extends LitElement {
         .reset-keybinds-button {
             background: var(--button-background, rgba(255, 255, 255, 0.1));
             color: var(--text-color);
-            border: 1px solid var(--button-border, rgba(255, 255, 255, 0.2));
-            padding: 8px 16px;
+            border: 1px solid var(--button-border, rgba(255, 255, 255, 0.15));
+            padding: 6px 10px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
         .reset-keybinds-button:hover {
             background: var(--button-hover-background, rgba(255, 255, 255, 0.15));
-            border-color: var(--button-hover-border, rgba(255, 255, 255, 0.3));
+            border-color: var(--button-hover-border, rgba(255, 255, 255, 0.25));
         }
 
         .reset-keybinds-button:active {
@@ -184,20 +208,22 @@ export class CustomizeView extends LitElement {
             width: 100%;
             border-collapse: collapse;
             margin-top: 8px;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         .keybinds-table th,
         .keybinds-table td {
-            padding: 8px 12px;
+            padding: 8px 10px;
             text-align: left;
-            border-bottom: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+            border-bottom: 1px solid var(--table-border, rgba(255, 255, 255, 0.08));
         }
 
         .keybinds-table th {
-            background: var(--table-header-background, rgba(255, 255, 255, 0.05));
+            background: var(--table-header-background, rgba(255, 255, 255, 0.04));
             font-weight: 600;
-            font-size: 12px;
-            color: var(--label-color, rgba(255, 255, 255, 0.9));
+            font-size: 11px;
+            color: var(--label-color, rgba(255, 255, 255, 0.8));
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -209,20 +235,20 @@ export class CustomizeView extends LitElement {
         .keybinds-table .action-name {
             font-weight: 500;
             color: var(--text-color);
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .keybinds-table .action-description {
-            font-size: 11px;
-            color: var(--description-color, rgba(255, 255, 255, 0.6));
+            font-size: 10px;
+            color: var(--description-color, rgba(255, 255, 255, 0.5));
             margin-top: 1px;
         }
 
         .keybinds-table .keybind-input {
-            min-width: 120px;
-            padding: 6px 10px;
+            min-width: 100px;
+            padding: 4px 8px;
             margin: 0;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .keybinds-table tr:hover {
@@ -234,53 +260,57 @@ export class CustomizeView extends LitElement {
         }
 
         .table-reset-row {
-            border-top: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+            border-top: 1px solid var(--table-border, rgba(255, 255, 255, 0.08));
         }
 
         .table-reset-row td {
-            padding-top: 12px;
-            padding-bottom: 10px;
+            padding-top: 10px;
+            padding-bottom: 8px;
             border-bottom: none;
         }
 
         .settings-note {
-            font-size: 11px;
-            color: var(--note-color, rgba(255, 255, 255, 0.5));
+            font-size: 10px;
+            color: var(--note-color, rgba(255, 255, 255, 0.4));
             font-style: italic;
             text-align: center;
-            margin-top: 12px;
+            margin-top: 10px;
             padding: 8px;
             background: var(--note-background, rgba(255, 255, 255, 0.02));
             border-radius: 4px;
-            border: 1px dashed var(--note-border, rgba(255, 255, 255, 0.1));
+            border: 1px solid var(--note-border, rgba(255, 255, 255, 0.08));
         }
 
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: var(--checkbox-background, rgba(255, 255, 255, 0.02));
+            border-radius: 4px;
+            border: 1px solid var(--checkbox-border, rgba(255, 255, 255, 0.06));
         }
 
         .checkbox-input {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             accent-color: var(--focus-border-color, #007aff);
             cursor: pointer;
         }
 
         .checkbox-label {
             font-weight: 500;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--label-color, rgba(255, 255, 255, 0.9));
             cursor: pointer;
             user-select: none;
         }
 
         .rate-limit-controls {
-            margin-left: 24px;
-            opacity: 0.6;
-            transition: opacity 0.2s ease;
+            margin-left: 22px;
+            opacity: 0.7;
+            transition: opacity 0.15s ease;
         }
 
         .rate-limit-controls.enabled {
@@ -288,19 +318,19 @@ export class CustomizeView extends LitElement {
         }
 
         .rate-limit-reset {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--table-border, rgba(255, 255, 255, 0.08));
         }
 
         .rate-limit-warning {
-            background: var(--warning-background, rgba(255, 193, 7, 0.1));
-            border: 1px solid var(--warning-border, rgba(255, 193, 7, 0.3));
+            background: var(--warning-background, rgba(251, 191, 36, 0.08));
+            border: 1px solid var(--warning-border, rgba(251, 191, 36, 0.2));
             border-radius: 4px;
             padding: 10px;
-            margin-bottom: 16px;
-            font-size: 12px;
-            color: var(--warning-color, #ffc107);
+            margin-bottom: 12px;
+            font-size: 11px;
+            color: var(--warning-color, #fbbf24);
             display: flex;
             align-items: flex-start;
             gap: 8px;
@@ -309,7 +339,22 @@ export class CustomizeView extends LitElement {
 
         .rate-limit-warning-icon {
             flex-shrink: 0;
-            font-size: 14px;
+            font-size: 12px;
+            margin-top: 1px;
+        }
+
+        /* Better focus indicators */
+        .form-control:focus-visible {
+            outline: none;
+            border-color: var(--focus-border-color, #007aff);
+            box-shadow: 0 0 0 2px var(--focus-shadow, rgba(0, 122, 255, 0.1));
+        }
+
+        /* Improved button states */
+        .reset-keybinds-button:focus-visible {
+            outline: none;
+            border-color: var(--focus-border-color, #007aff);
+            box-shadow: 0 0 0 2px var(--focus-shadow, rgba(0, 122, 255, 0.1));
         }
     `;
 
@@ -329,6 +374,8 @@ export class CustomizeView extends LitElement {
         onScreenshotIntervalChange: { type: Function },
         onImageQualityChange: { type: Function },
         onLayoutModeChange: { type: Function },
+        advancedMode: { type: Boolean },
+        onAdvancedModeChange: { type: Function },
     };
 
     constructor() {
@@ -344,6 +391,7 @@ export class CustomizeView extends LitElement {
         this.onScreenshotIntervalChange = () => {};
         this.onImageQualityChange = () => {};
         this.onLayoutModeChange = () => {};
+        this.onAdvancedModeChange = () => {};
 
         // Rate limiting defaults
         this.throttleTokens = true;
@@ -353,9 +401,13 @@ export class CustomizeView extends LitElement {
         // Google Search default
         this.googleSearchEnabled = true;
 
+        // Advanced mode default
+        this.advancedMode = false;
+
         this.loadKeybinds();
         this.loadRateLimitSettings();
         this.loadGoogleSearchSettings();
+        this.loadAdvancedModeSettings();
     }
 
     connectedCallback() {
@@ -725,6 +777,20 @@ export class CustomizeView extends LitElement {
         }
     }
 
+    loadAdvancedModeSettings() {
+        const advancedMode = localStorage.getItem('advancedMode');
+        if (advancedMode !== null) {
+            this.advancedMode = advancedMode === 'true';
+        }
+    }
+
+    async handleAdvancedModeChange(e) {
+        this.advancedMode = e.target.checked;
+        localStorage.setItem('advancedMode', this.advancedMode.toString());
+        this.onAdvancedModeChange(this.advancedMode);
+        this.requestUpdate();
+    }
+
     render() {
         const profiles = this.getProfiles();
         const languages = this.getLanguages();
@@ -745,7 +811,7 @@ export class CustomizeView extends LitElement {
                             <div class="form-group">
                                 <label class="form-label">
                                     Profile Type
-                                    <span class="current-selection">✓ ${currentProfile?.name || 'Unknown'}</span>
+                                    <span class="current-selection">${currentProfile?.name || 'Unknown'}</span>
                                 </label>
                                 <select class="form-control" .value=${this.selectedProfile} @change=${this.handleProfileSelect}>
                                     ${profiles.map(
@@ -763,9 +829,9 @@ export class CustomizeView extends LitElement {
                             <label class="form-label">Custom AI Instructions</label>
                             <textarea
                                 class="form-control"
-                                placeholder="Add specific instructions for how you want the AI to behave during ${profileNames[
-                                    this.selectedProfile
-                                ] || 'this interaction'}..."
+                                placeholder="Add specific instructions for how you want the AI to behave during ${
+                                    profileNames[this.selectedProfile] || 'this interaction'
+                                }..."
                                 .value=${localStorage.getItem('customPrompt') || ''}
                                 rows="4"
                                 @input=${this.handleCustomPromptInput}
@@ -789,7 +855,7 @@ export class CustomizeView extends LitElement {
                             <div class="form-group">
                                 <label class="form-label">
                                     Speech Language
-                                    <span class="current-selection">✓ ${currentLanguage?.name || 'Unknown'}</span>
+                                    <span class="current-selection">${currentLanguage?.name || 'Unknown'}</span>
                                 </label>
                                 <select class="form-control" .value=${this.selectedLanguage} @change=${this.handleLanguageSelect}>
                                     ${languages.map(
@@ -817,16 +883,18 @@ export class CustomizeView extends LitElement {
                             <div class="form-group">
                                 <label class="form-label">
                                     Layout Mode
-                                    <span class="current-selection">✓ ${this.layoutMode === 'compact' ? 'Compact' : 'Normal'}</span>
+                                    <span class="current-selection">${this.layoutMode === 'compact' ? 'Compact' : 'Normal'}</span>
                                 </label>
                                 <select class="form-control" .value=${this.layoutMode} @change=${this.handleLayoutModeSelect}>
                                     <option value="normal" ?selected=${this.layoutMode === 'normal'}>Normal</option>
                                     <option value="compact" ?selected=${this.layoutMode === 'compact'}>Compact</option>
                                 </select>
                                 <div class="form-description">
-                                    ${this.layoutMode === 'compact'
-                                        ? 'Smaller window size with reduced padding and font sizes for minimal screen footprint'
-                                        : 'Standard layout with comfortable spacing and font sizes'}
+                                    ${
+                                        this.layoutMode === 'compact'
+                                            ? 'Smaller window size with reduced padding and font sizes for minimal screen footprint'
+                                            : 'Standard layout with comfortable spacing and font sizes'
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -845,7 +913,7 @@ export class CustomizeView extends LitElement {
                                 <label class="form-label">
                                     Capture Interval
                                     <span class="current-selection"
-                                        >✓ ${this.selectedScreenshotInterval === 'manual' ? 'Manual' : this.selectedScreenshotInterval + 's'}</span
+                                        >${this.selectedScreenshotInterval === 'manual' ? 'Manual' : this.selectedScreenshotInterval + 's'}</span
                                     >
                                 </label>
                                 <select class="form-control" .value=${this.selectedScreenshotInterval} @change=${this.handleScreenshotIntervalSelect}>
@@ -856,9 +924,11 @@ export class CustomizeView extends LitElement {
                                     <option value="10" ?selected=${this.selectedScreenshotInterval === '10'}>Every 10 seconds</option>
                                 </select>
                                 <div class="form-description">
-                                    ${this.selectedScreenshotInterval === 'manual'
-                                        ? 'Screenshots will only be taken when you press the manual capture key (⌘+Shift+S)'
-                                        : 'Automatic screenshots will be taken at the specified interval'}
+                                    ${
+                                        this.selectedScreenshotInterval === 'manual'
+                                            ? 'Screenshots will only be taken when you press the manual capture key (⌘+Shift+S)'
+                                            : 'Automatic screenshots will be taken at the specified interval'
+                                    }
                                 </div>
                             </div>
 
@@ -866,7 +936,7 @@ export class CustomizeView extends LitElement {
                                 <label class="form-label">
                                     Image Quality
                                     <span class="current-selection"
-                                        >✓ ${this.selectedImageQuality.charAt(0).toUpperCase() + this.selectedImageQuality.slice(1)}</span
+                                        >${this.selectedImageQuality.charAt(0).toUpperCase() + this.selectedImageQuality.slice(1)}</span
                                     >
                                 </label>
                                 <select class="form-control" .value=${this.selectedImageQuality} @change=${this.handleImageQualitySelect}>
@@ -875,11 +945,13 @@ export class CustomizeView extends LitElement {
                                     <option value="low" ?selected=${this.selectedImageQuality === 'low'}>Low Quality</option>
                                 </select>
                                 <div class="form-description">
-                                    ${this.selectedImageQuality === 'high'
-                                        ? 'Best quality, uses more tokens'
-                                        : this.selectedImageQuality === 'medium'
-                                          ? 'Balanced quality and token usage'
-                                          : 'Lower quality, uses fewer tokens'}
+                                    ${
+                                        this.selectedImageQuality === 'high'
+                                            ? 'Best quality, uses more tokens'
+                                            : this.selectedImageQuality === 'medium'
+                                              ? 'Balanced quality and token usage'
+                                              : 'Lower quality, uses fewer tokens'
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -1032,6 +1104,31 @@ export class CustomizeView extends LitElement {
 
                 <div class="settings-note">
                     💡 Settings are automatically saved as you change them. Changes will take effect immediately or on the next session start.
+                </div>
+
+                <!-- Advanced Mode Section (Danger Zone) -->
+                <div class="settings-section" style="border-color: var(--danger-border, rgba(239, 68, 68, 0.3)); background: var(--danger-background, rgba(239, 68, 68, 0.05));">
+                    <div class="section-title" style="color: var(--danger-color, #ef4444);">
+                        <span>⚠️ Advanced Mode</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="checkbox-group">
+                                <input
+                                    type="checkbox"
+                                    class="checkbox-input"
+                                    id="advanced-mode"
+                                    .checked=${this.advancedMode}
+                                    @change=${this.handleAdvancedModeChange}
+                                />
+                                <label for="advanced-mode" class="checkbox-label"> Enable Advanced Mode </label>
+                            </div>
+                            <div class="form-description" style="margin-left: 24px; margin-top: -8px;">
+                                Unlock experimental features, developer tools, and advanced configuration options
+                                <br /><strong>Note:</strong> Advanced mode adds a new icon to the main navigation bar
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;

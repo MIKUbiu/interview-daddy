@@ -93,8 +93,11 @@ export class AppHeader extends LitElement {
         onHelpClick: { type: Function },
         onHistoryClick: { type: Function },
         onCloseClick: { type: Function },
+        onBackClick: { type: Function },
         onHideToggleClick: { type: Function },
         isClickThrough: { type: Boolean, reflect: true },
+        advancedMode: { type: Boolean },
+        onAdvancedClick: { type: Function },
     };
 
     constructor() {
@@ -106,8 +109,11 @@ export class AppHeader extends LitElement {
         this.onHelpClick = () => {};
         this.onHistoryClick = () => {};
         this.onCloseClick = () => {};
+        this.onBackClick = () => {};
         this.onHideToggleClick = () => {};
         this.isClickThrough = false;
+        this.advancedMode = false;
+        this.onAdvancedClick = () => {};
         this._timerInterval = null;
     }
 
@@ -170,6 +176,7 @@ export class AppHeader extends LitElement {
             customize: 'Customize',
             help: 'Help & Shortcuts',
             history: 'Conversation History',
+            advanced: 'Advanced Tools',
             assistant: 'Cheating Daddy',
         };
         return titles[this.currentView] || 'Cheating Daddy';
@@ -181,6 +188,11 @@ export class AppHeader extends LitElement {
             return `${elapsed}s`;
         }
         return '';
+    }
+
+    isNavigationView() {
+        const navigationViews = ['customize', 'help', 'history', 'advanced'];
+        return navigationViews.includes(this.currentView);
     }
 
     render() {
@@ -238,6 +250,51 @@ export class AppHeader extends LitElement {
                                       ></path>
                                   </svg>
                               </button>
+                              ${this.advancedMode
+                                  ? html`
+                                        <button class="icon-button" @click=${this.onAdvancedClick} title="Advanced Tools">
+                                            <?xml version="1.0" encoding="UTF-8"?><svg
+                                                width="24px"
+                                                stroke-width="1.7"
+                                                height="24px"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                color="currentColor"
+                                            >
+                                                <path d="M18.5 15L5.5 15" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+                                                <path
+                                                    d="M16 4L8 4"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.7"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                ></path>
+                                                <path
+                                                    d="M9 4.5L9 10.2602C9 10.7376 8.82922 11.1992 8.51851 11.5617L3.48149 17.4383C3.17078 17.8008 3 18.2624 3 18.7398V19C3 20.1046 3.89543 21 5 21L19 21C20.1046 21 21 20.1046 21 19V18.7398C21 18.2624 20.8292 17.8008 20.5185 17.4383L15.4815 11.5617C15.1708 11.1992 15 10.7376 15 10.2602L15 4.5"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.7"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                ></path>
+                                                <path
+                                                    d="M12 9.01L12.01 8.99889"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.7"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                ></path>
+                                                <path
+                                                    d="M11 2.01L11.01 1.99889"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.7"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                ></path>
+                                            </svg>
+                                        </button>
+                                    `
+                                  : ''}
                               <button class="icon-button" @click=${this.onCustomizeClick}>
                                   <?xml version="1.0" encoding="UTF-8"?><svg
                                       width="24px"
@@ -326,7 +383,7 @@ export class AppHeader extends LitElement {
                               </button>
                           `
                         : html`
-                              <button @click=${this.onCloseClick} class="icon-button window-close">
+                              <button @click=${this.isNavigationView() ? this.onBackClick : this.onCloseClick} class="icon-button window-close">
                                   <?xml version="1.0" encoding="UTF-8"?><svg
                                       width="24px"
                                       height="24px"

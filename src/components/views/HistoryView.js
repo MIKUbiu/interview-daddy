@@ -3,7 +3,11 @@ import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
 export class HistoryView extends LitElement {
     static styles = css`
         * {
-            font-family: 'Inter', sans-serif;
+            font-family:
+                'Inter',
+                -apple-system,
+                BlinkMacSystemFont,
+                sans-serif;
             cursor: default;
             user-select: none;
         }
@@ -24,17 +28,17 @@ export class HistoryView extends LitElement {
         .sessions-list {
             flex: 1;
             overflow-y: auto;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .session-item {
             background: var(--input-background);
             border: 1px solid var(--button-border);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
         .session-item:hover {
@@ -51,24 +55,24 @@ export class HistoryView extends LitElement {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .session-date {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-color);
         }
 
         .session-time {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--description-color);
         }
 
         .session-preview {
-            font-size: 13px;
+            font-size: 11px;
             color: var(--description-color);
-            line-height: 1.4;
+            line-height: 1.3;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -80,18 +84,18 @@ export class HistoryView extends LitElement {
             overflow-y: auto;
             background: var(--main-content-background);
             border: 1px solid var(--button-border);
-            border-radius: 8px;
-            padding: 16px;
+            border-radius: 6px;
+            padding: 12px;
         }
 
         .message {
-            margin-bottom: 8px;
-            padding: 8px 12px;
-            border-left: 4px solid transparent;
-            font-size: 14px;
-            line-height: 1.5;
+            margin-bottom: 6px;
+            padding: 6px 10px;
+            border-left: 3px solid transparent;
+            font-size: 12px;
+            line-height: 1.4;
             background: var(--input-background);
-            border-radius: 0 6px 6px 0;
+            border-radius: 0 4px 4px 0;
         }
 
         .message.user {
@@ -106,21 +110,22 @@ export class HistoryView extends LitElement {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .back-button {
             background: var(--button-background);
             color: var(--text-color);
             border: 1px solid var(--button-border);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
             font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            transition: all 0.15s ease;
         }
 
         .back-button:hover {
@@ -129,21 +134,21 @@ export class HistoryView extends LitElement {
 
         .legend {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             align-items: center;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
+            gap: 4px;
+            font-size: 11px;
             color: var(--description-color);
         }
 
         .legend-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
         }
 
@@ -158,22 +163,59 @@ export class HistoryView extends LitElement {
         .empty-state {
             text-align: center;
             color: var(--description-color);
-            font-size: 14px;
-            margin-top: 40px;
+            font-size: 12px;
+            margin-top: 32px;
         }
 
         .empty-state-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: var(--text-color);
         }
 
         .loading {
             text-align: center;
             color: var(--description-color);
-            font-size: 14px;
-            margin-top: 40px;
+            font-size: 12px;
+            margin-top: 32px;
+        }
+
+        /* Scrollbar styles for scrollable elements */
+        .sessions-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sessions-list::-webkit-scrollbar-track {
+            background: var(--scrollbar-track, rgba(0, 0, 0, 0.2));
+            border-radius: 3px;
+        }
+
+        .sessions-list::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb, rgba(255, 255, 255, 0.2));
+            border-radius: 3px;
+        }
+
+        .sessions-list::-webkit-scrollbar-thumb:hover {
+            background: var(--scrollbar-thumb-hover, rgba(255, 255, 255, 0.3));
+        }
+
+        .conversation-view::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .conversation-view::-webkit-scrollbar-track {
+            background: var(--scrollbar-track, rgba(0, 0, 0, 0.2));
+            border-radius: 3px;
+        }
+
+        .conversation-view::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb, rgba(255, 255, 255, 0.2));
+            border-radius: 3px;
+        }
+
+        .conversation-view::-webkit-scrollbar-thumb:hover {
+            background: var(--scrollbar-thumb-hover, rgba(255, 255, 255, 0.3));
         }
     `;
 
