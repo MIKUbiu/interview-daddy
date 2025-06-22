@@ -96,6 +96,7 @@ export class MainView extends LitElement {
         onStart: { type: Function },
         onAPIKeyHelp: { type: Function },
         isInitializing: { type: Boolean },
+        onLayoutModeChange: { type: Function },
     };
 
     constructor() {
@@ -103,6 +104,7 @@ export class MainView extends LitElement {
         this.onStart = () => {};
         this.onAPIKeyHelp = () => {};
         this.isInitializing = false;
+        this.onLayoutModeChange = () => {};
     }
 
     connectedCallback() {
@@ -110,6 +112,9 @@ export class MainView extends LitElement {
         window.electron?.ipcRenderer?.on('session-initializing', (event, isInitializing) => {
             this.isInitializing = isInitializing;
         });
+
+        // Load and apply layout mode on startup
+        this.loadLayoutMode();
     }
 
     disconnectedCallback() {
@@ -136,6 +141,14 @@ export class MainView extends LitElement {
         localStorage.removeItem('onboardingCompleted');
         // Refresh the page to trigger onboarding
         window.location.reload();
+    }
+
+    loadLayoutMode() {
+        const savedLayoutMode = localStorage.getItem('layoutMode');
+        if (savedLayoutMode && savedLayoutMode !== 'normal') {
+            // Notify parent component to apply the saved layout mode
+            this.onLayoutModeChange(savedLayoutMode);
+        }
     }
 
     render() {

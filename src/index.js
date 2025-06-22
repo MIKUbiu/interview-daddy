@@ -78,9 +78,16 @@ function getCurrentSessionData() {
 }
 
 function createWindow() {
+    // Get layout preference (default to 'normal')
+    let windowWidth = 900;
+    let windowHeight = 400;
+
+    // Try to get layout setting - we'll set up a proper way to read this after window is created
+    // For now, use default normal layout
+
     const mainWindow = new BrowserWindow({
-        width: 900,
-        height: 400,
+        width: windowWidth,
+        height: windowHeight,
         frame: false,
         transparent: true,
         hasShadow: false,
@@ -111,43 +118,51 @@ function createWindow() {
     mainWindow.setContentProtection(true);
     mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
+    // Center window at the top of the screen
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width: screenWidth } = primaryDisplay.workAreaSize;
+    const x = Math.floor((screenWidth - windowWidth) / 2);
+    const y = 0; // Or a small offset like 10, 20 if needed
+    mainWindow.setPosition(x, y);
+
     if (process.platform === 'win32') {
         mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
     }
 
     mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
-    // Load custom keybinds or use defaults
-    const defaultKeybinds = getDefaultKeybinds();
-    let keybinds = defaultKeybinds;
-
-    // Try to load saved keybinds
+    // After window is created, check for layout preference and resize if needed
     mainWindow.webContents.once('dom-ready', () => {
-        mainWindow.webContents
-            .executeJavaScript(
-                `
-            try {
-                const saved = localStorage.getItem('customKeybinds');
-                return saved ? JSON.parse(saved) : null;
-            } catch (e) {
-                return null;
-            }
-        `
-            )
-            .then(savedKeybinds => {
-                if (savedKeybinds) {
-                    keybinds = { ...defaultKeybinds, ...savedKeybinds };
-                }
-                updateGlobalShortcuts(keybinds, mainWindow);
-            })
-            .catch(() => {
-                // Fallback to default keybinds
-                updateGlobalShortcuts(keybinds, mainWindow);
-            });
-    });
+        // Add a small delay to ensure DOM and localStorage are fully ready
+        setTimeout(() => {
+            // Load keybindings only (layout mode is handled by the UI components)
+            const defaultKeybinds = getDefaultKeybinds();
+            let keybinds = defaultKeybinds;
 
-    // Initialize with default keybinds immediately for early app usage
-    updateGlobalShortcuts(keybinds, mainWindow);
+            // Try to load saved keybinds
+            mainWindow.webContents
+                .executeJavaScript(
+                    `
+                try {
+                    const saved = localStorage.getItem('customKeybinds');
+                    return saved ? JSON.parse(saved) : null;
+                } catch (e) {
+                    return null;
+                }
+            `
+                )
+                .then(savedKeybinds => {
+                    if (savedKeybinds) {
+                        keybinds = { ...defaultKeybinds, ...savedKeybinds };
+                    }
+                    updateGlobalShortcuts(keybinds, mainWindow);
+                })
+                .catch(() => {
+                    // Fallback to default keybinds
+                    updateGlobalShortcuts(keybinds, mainWindow);
+                });
+        }, 150);
+    });
 
     ipcMain.on('view-changed', (event, view) => {
         if (view !== 'assistant') {
@@ -794,6 +809,60 @@ ipcMain.handle('update-google-search-setting', async (event, enabled) => {
         return { success: true };
     } catch (error) {
         console.error('Error updating Google Search setting:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// Add layout mode handler
+ipcMain.handle('update-layout-mode', async (event, layoutMode) => {
+    try {
+        console.log('Layout mode update requested:', layoutMode);
+
+        const windows = BrowserWindow.getAllWindows();
+        if (windows.length > 0) {
+            const mainWindow = windows[0];
+
+            let targetWidth, targetHeight;
+
+            if (layoutMode === 'compact') {
+                targetWidth = 700;
+                targetHeight = 300;
+            } else {
+                // Assumes 'normal' or default
+                targetWidth = 900;
+                targetHeight = 400;
+            }
+
+            const [currentWidth, currentHeight] = mainWindow.getSize();
+            console.log('Current window size:', currentWidth, 'x', currentHeight);
+
+            if (currentWidth !== targetWidth || currentHeight !== targetHeight) {
+                mainWindow.setSize(targetWidth, targetHeight);
+                console.log(`Window resized to ${layoutMode} mode: ${targetWidth}x${targetHeight}`);
+            } else {
+                console.log(`Window already in ${layoutMode} size`);
+            }
+
+            // Re-center the window at the top
+            const primaryDisplay = screen.getPrimaryDisplay();
+            const { width: screenWidth } = primaryDisplay.workAreaSize;
+            const x = Math.floor((screenWidth - targetWidth) / 2);
+            const y = 0; // Position at the top
+            mainWindow.setPosition(x, y);
+            console.log(`Window re-centered to x: ${x}, y: ${y} for ${layoutMode} mode (width: ${targetWidth})`);
+
+            // Verify the resize worked (optional, can be kept or removed)
+            setTimeout(() => {
+                const [newWidth, newHeight] = mainWindow.getSize();
+                console.log('Window size after resize:', newWidth, 'x', newHeight);
+            }, 100);
+        } else {
+            console.warn('No windows found for layout mode update');
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating layout mode:', error);
         return { success: false, error: error.message };
     }
 });

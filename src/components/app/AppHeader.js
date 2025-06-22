@@ -12,28 +12,28 @@ export class AppHeader extends LitElement {
             -webkit-app-region: drag;
             display: flex;
             align-items: center;
-            padding: 10px 20px;
+            padding: var(--header-padding);
             border: 1px solid var(--border-color);
             background: var(--header-background);
-            border-radius: 7px;
+            border-radius: var(--border-radius);
         }
 
         .header-title {
             flex: 1;
-            font-size: 16px;
+            font-size: var(--header-font-size);
             font-weight: 600;
             -webkit-app-region: drag;
         }
 
         .header-actions {
             display: flex;
-            gap: 12px;
+            gap: var(--header-gap);
             align-items: center;
             -webkit-app-region: no-drag;
         }
 
         .header-actions span {
-            font-size: 13px;
+            font-size: var(--header-font-size-small);
             color: var(--header-actions-color);
         }
 
@@ -41,9 +41,9 @@ export class AppHeader extends LitElement {
             background: var(--button-background);
             color: var(--text-color);
             border: 1px solid var(--button-border);
-            padding: 8px 16px;
+            padding: var(--header-button-padding);
             border-radius: 8px;
-            font-size: 13px;
+            font-size: var(--header-font-size-small);
             font-weight: 500;
         }
 
@@ -51,11 +51,16 @@ export class AppHeader extends LitElement {
             background: none;
             color: var(--icon-button-color);
             border: none;
-            padding: 8px;
+            padding: var(--header-icon-padding);
             border-radius: 8px;
-            font-size: 13px;
+            font-size: var(--header-font-size-small);
             font-weight: 500;
             display: flex;
+        }
+
+        .icon-button svg {
+            width: var(--icon-size);
+            height: var(--icon-size);
         }
 
         .icon-button:hover {

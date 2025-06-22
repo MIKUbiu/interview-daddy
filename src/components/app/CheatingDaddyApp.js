@@ -44,10 +44,10 @@ export class CheatingDaddyApp extends LitElement {
 
         .main-content {
             flex: 1;
-            padding: 20px;
+            padding: var(--main-content-padding);
             overflow-y: auto;
-            margin-top: 10px;
-            border-radius: 7px;
+            margin-top: var(--main-content-margin-top);
+            border-radius: var(--content-border-radius);
             transition: all 0.15s ease-out;
             background: var(--main-content-background);
         }
@@ -113,6 +113,7 @@ export class CheatingDaddyApp extends LitElement {
         currentResponseIndex: { type: Number },
         selectedScreenshotInterval: { type: String },
         selectedImageQuality: { type: String },
+        layoutMode: { type: String },
         _viewInstances: { type: Object, state: true },
         _isClickThrough: { state: true },
     };
@@ -130,14 +131,19 @@ export class CheatingDaddyApp extends LitElement {
         this.selectedLanguage = localStorage.getItem('selectedLanguage') || 'en-US';
         this.selectedScreenshotInterval = localStorage.getItem('selectedScreenshotInterval') || '5';
         this.selectedImageQuality = localStorage.getItem('selectedImageQuality') || 'medium';
+        this.layoutMode = localStorage.getItem('layoutMode') || 'normal';
         this.responses = [];
         this.currentResponseIndex = -1;
         this._viewInstances = new Map();
         this._isClickThrough = false;
+
+        // Apply layout mode to document root
+        this.updateLayoutMode();
     }
 
     connectedCallback() {
         super.connectedCallback();
+
         // Set up IPC listeners if needed
         if (window.require) {
             const { ipcRenderer } = window.require('electron');
@@ -265,6 +271,7 @@ export class CheatingDaddyApp extends LitElement {
 
     handleImageQualityChange(quality) {
         this.selectedImageQuality = quality;
+        localStorage.setItem('selectedImageQuality', quality);
     }
 
     // Help view event handlers
@@ -329,6 +336,9 @@ export class CheatingDaddyApp extends LitElement {
         if (changedProperties.has('selectedImageQuality')) {
             localStorage.setItem('selectedImageQuality', this.selectedImageQuality);
         }
+        if (changedProperties.has('layoutMode')) {
+            this.updateLayoutMode();
+        }
     }
 
     renderCurrentView() {
@@ -342,7 +352,13 @@ export class CheatingDaddyApp extends LitElement {
                 `;
 
             case 'main':
-                return html` <main-view .onStart=${() => this.handleStart()} .onAPIKeyHelp=${() => this.handleAPIKeyHelp()}></main-view> `;
+                return html`
+                    <main-view
+                        .onStart=${() => this.handleStart()}
+                        .onAPIKeyHelp=${() => this.handleAPIKeyHelp()}
+                        .onLayoutModeChange=${layoutMode => this.handleLayoutModeChange(layoutMode)}
+                    ></main-view>
+                `;
 
             case 'customize':
                 return html`
@@ -351,10 +367,12 @@ export class CheatingDaddyApp extends LitElement {
                         .selectedLanguage=${this.selectedLanguage}
                         .selectedScreenshotInterval=${this.selectedScreenshotInterval}
                         .selectedImageQuality=${this.selectedImageQuality}
+                        .layoutMode=${this.layoutMode}
                         .onProfileChange=${profile => this.handleProfileChange(profile)}
                         .onLanguageChange=${language => this.handleLanguageChange(language)}
                         .onScreenshotIntervalChange=${interval => this.handleScreenshotIntervalChange(interval)}
                         .onImageQualityChange=${quality => this.handleImageQualityChange(quality)}
+                        .onLayoutModeChange=${layoutMode => this.handleLayoutModeChange(layoutMode)}
                     ></customize-view>
                 `;
 
@@ -405,6 +423,33 @@ export class CheatingDaddyApp extends LitElement {
                 </div>
             </div>
         `;
+    }
+
+    updateLayoutMode() {
+        // Apply or remove compact layout class to document root
+        if (this.layoutMode === 'compact') {
+            document.documentElement.classList.add('compact-layout');
+        } else {
+            document.documentElement.classList.remove('compact-layout');
+        }
+    }
+
+    async handleLayoutModeChange(layoutMode) {
+        this.layoutMode = layoutMode;
+        localStorage.setItem('layoutMode', layoutMode);
+        this.updateLayoutMode();
+
+        // Notify main process about layout change for window resizing
+        if (window.require) {
+            try {
+                const { ipcRenderer } = window.require('electron');
+                await ipcRenderer.invoke('update-layout-mode', layoutMode);
+            } catch (error) {
+                console.error('Failed to update layout mode in main process:', error);
+            }
+        }
+
+        this.requestUpdate();
     }
 }
 

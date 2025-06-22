@@ -318,17 +318,17 @@ export class CustomizeView extends LitElement {
         selectedLanguage: { type: String },
         selectedScreenshotInterval: { type: String },
         selectedImageQuality: { type: String },
+        layoutMode: { type: String },
         keybinds: { type: Object },
+        throttleTokens: { type: Boolean },
+        maxTokensPerMin: { type: Number },
+        throttleAtPercent: { type: Number },
+        googleSearchEnabled: { type: Boolean },
         onProfileChange: { type: Function },
         onLanguageChange: { type: Function },
         onScreenshotIntervalChange: { type: Function },
         onImageQualityChange: { type: Function },
-        // Rate limiting properties
-        throttleTokens: { type: Boolean },
-        maxTokensPerMin: { type: Number },
-        throttleAtPercent: { type: Number },
-        // Google Search property
-        googleSearchEnabled: { type: Boolean },
+        onLayoutModeChange: { type: Function },
     };
 
     constructor() {
@@ -337,11 +337,13 @@ export class CustomizeView extends LitElement {
         this.selectedLanguage = 'en-US';
         this.selectedScreenshotInterval = '5';
         this.selectedImageQuality = 'medium';
+        this.layoutMode = 'normal';
         this.keybinds = this.getDefaultKeybinds();
         this.onProfileChange = () => {};
         this.onLanguageChange = () => {};
         this.onScreenshotIntervalChange = () => {};
         this.onImageQualityChange = () => {};
+        this.onLayoutModeChange = () => {};
 
         // Rate limiting defaults
         this.throttleTokens = true;
@@ -354,6 +356,12 @@ export class CustomizeView extends LitElement {
         this.loadKeybinds();
         this.loadRateLimitSettings();
         this.loadGoogleSearchSettings();
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        // Load layout mode for display purposes
+        this.loadLayoutMode();
     }
 
     getProfiles() {
@@ -451,8 +459,13 @@ export class CustomizeView extends LitElement {
 
     handleImageQualitySelect(e) {
         this.selectedImageQuality = e.target.value;
-        localStorage.setItem('selectedImageQuality', this.selectedImageQuality);
-        this.onImageQualityChange(this.selectedImageQuality);
+        this.onImageQualityChange(e.target.value);
+    }
+
+    handleLayoutModeSelect(e) {
+        this.layoutMode = e.target.value;
+        localStorage.setItem('layoutMode', this.layoutMode);
+        this.onLayoutModeChange(e.target.value);
     }
 
     handleCustomPromptInput(e) {
@@ -705,6 +718,13 @@ export class CustomizeView extends LitElement {
         this.requestUpdate();
     }
 
+    loadLayoutMode() {
+        const savedLayoutMode = localStorage.getItem('layoutMode');
+        if (savedLayoutMode) {
+            this.layoutMode = savedLayoutMode;
+        }
+    }
+
     render() {
         const profiles = this.getProfiles();
         const languages = this.getLanguages();
@@ -781,6 +801,33 @@ export class CustomizeView extends LitElement {
                                     )}
                                 </select>
                                 <div class="form-description">Language for speech recognition and AI responses</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interface Layout Section -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <span>Interface Layout</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Layout Mode
+                                    <span class="current-selection">✓ ${this.layoutMode === 'compact' ? 'Compact' : 'Normal'}</span>
+                                </label>
+                                <select class="form-control" .value=${this.layoutMode} @change=${this.handleLayoutModeSelect}>
+                                    <option value="normal" ?selected=${this.layoutMode === 'normal'}>Normal</option>
+                                    <option value="compact" ?selected=${this.layoutMode === 'compact'}>Compact</option>
+                                </select>
+                                <div class="form-description">
+                                    ${this.layoutMode === 'compact'
+                                        ? 'Smaller window size with reduced padding and font sizes for minimal screen footprint'
+                                        : 'Standard layout with comfortable spacing and font sizes'}
+                                </div>
                             </div>
                         </div>
                     </div>
