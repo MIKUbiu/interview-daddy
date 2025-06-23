@@ -1,4 +1,5 @@
 import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
+import { resizeLayout } from '../../utils/windowResize.js';
 
 export class HistoryView extends LitElement {
     static styles = css`
@@ -231,6 +232,12 @@ export class HistoryView extends LitElement {
         this.selectedSession = null;
         this.loading = true;
         this.loadSessions();
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        // Resize window for this view
+        resizeLayout('history');
     }
 
     async loadSessions() {

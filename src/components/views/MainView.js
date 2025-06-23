@@ -1,4 +1,5 @@
 import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
+import { resizeLayout } from '../../utils/windowResize.js';
 
 export class MainView extends LitElement {
     static styles = css`
@@ -115,6 +116,8 @@ export class MainView extends LitElement {
 
         // Load and apply layout mode on startup
         this.loadLayoutMode();
+        // Resize window for this view
+        resizeLayout('main');
     }
 
     disconnectedCallback() {

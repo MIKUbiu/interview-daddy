@@ -1,4 +1,5 @@
 import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
+import { resizeLayout } from '../../utils/windowResize.js';
 
 export class CustomizeView extends LitElement {
     static styles = css`
@@ -414,6 +415,8 @@ export class CustomizeView extends LitElement {
         super.connectedCallback();
         // Load layout mode for display purposes
         this.loadLayoutMode();
+        // Resize window for this view
+        resizeLayout('customize');
     }
 
     getProfiles() {

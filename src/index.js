@@ -866,3 +866,81 @@ ipcMain.handle('update-layout-mode', async (event, layoutMode) => {
         return { success: false, error: error.message };
     }
 });
+
+// Add view-based window resizing handler
+ipcMain.handle('resize-for-view', async (event, viewName, layoutMode = 'normal') => {
+    try {
+        console.log('View-based resize requested:', viewName, 'layout:', layoutMode);
+
+        const windows = BrowserWindow.getAllWindows();
+        if (windows.length > 0) {
+            const mainWindow = windows[0];
+
+            let targetWidth, targetHeight;
+
+            // Determine base size from layout mode
+            const baseWidth = layoutMode === 'compact' ? 700 : 900;
+            const baseHeight = layoutMode === 'compact' ? 300 : 400;
+
+            // Adjust height based on view
+            switch (viewName) {
+                case 'customize':
+                case 'settings':
+                    targetWidth = baseWidth;
+                    targetHeight = layoutMode === 'compact' ? 500 : 600;
+                    break;
+                case 'help':
+                    targetWidth = baseWidth;
+                    targetHeight = layoutMode === 'compact' ? 450 : 550;
+                    break;
+                case 'history':
+                    targetWidth = baseWidth;
+                    targetHeight = layoutMode === 'compact' ? 450 : 550;
+                    break;
+                case 'advanced':
+                    targetWidth = baseWidth;
+                    targetHeight = layoutMode === 'compact' ? 400 : 500;
+                    break;
+                case 'main':
+                case 'assistant':
+                case 'onboarding':
+                default:
+                    // Use base dimensions for other views
+                    targetWidth = baseWidth;
+                    targetHeight = baseHeight;
+                    break;
+            }
+
+            const [currentWidth, currentHeight] = mainWindow.getSize();
+            console.log('Current window size:', currentWidth, 'x', currentHeight);
+
+            if (currentWidth !== targetWidth || currentHeight !== targetHeight) {
+                mainWindow.setSize(targetWidth, targetHeight);
+                console.log(`Window resized for ${viewName} view (${layoutMode}): ${targetWidth}x${targetHeight}`);
+            } else {
+                console.log(`Window already correct size for ${viewName} view`);
+            }
+
+            // Re-center the window at the top
+            const primaryDisplay = screen.getPrimaryDisplay();
+            const { width: screenWidth } = primaryDisplay.workAreaSize;
+            const x = Math.floor((screenWidth - targetWidth) / 2);
+            const y = 0; // Position at the top
+            mainWindow.setPosition(x, y);
+            console.log(`Window re-centered to x: ${x}, y: ${y} for ${viewName} view (width: ${targetWidth})`);
+
+            // Verify the resize worked
+            setTimeout(() => {
+                const [newWidth, newHeight] = mainWindow.getSize();
+                console.log('Window size after view resize:', newWidth, 'x', newHeight);
+            }, 50);
+        } else {
+            console.warn('No windows found for view resize');
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error resizing for view:', error);
+        return { success: false, error: error.message };
+    }
+});

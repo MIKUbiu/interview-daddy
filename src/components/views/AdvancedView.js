@@ -1,4 +1,5 @@
 import { html, css, LitElement } from '../../assets/lit-core-2.7.4.min.js';
+import { resizeLayout } from '../../utils/windowResize.js';
 
 export class AdvancedView extends LitElement {
     static styles = css`
@@ -202,6 +203,12 @@ export class AdvancedView extends LitElement {
         this.isClearing = false;
         this.statusMessage = '';
         this.statusType = '';
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        // Resize window for this view
+        resizeLayout('advanced');
     }
 
     async clearLocalData() {
