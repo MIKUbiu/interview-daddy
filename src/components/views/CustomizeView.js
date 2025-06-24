@@ -538,6 +538,8 @@ export class CustomizeView extends LitElement {
             toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
             nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
             manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
+            previousResponse: isMac ? 'Cmd+[' : 'Ctrl+[',
+            nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
         };
     }
 
@@ -619,6 +621,16 @@ export class CustomizeView extends LitElement {
                 key: 'manualScreenshot',
                 name: 'Manual Screenshot',
                 description: 'Take a manual screenshot for AI analysis',
+            },
+            {
+                key: 'previousResponse',
+                name: 'Previous Response',
+                description: 'Navigate to the previous AI response',
+            },
+            {
+                key: 'nextResponse',
+                name: 'Next Response',
+                description: 'Navigate to the next AI response',
             },
         ];
     }

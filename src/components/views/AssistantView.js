@@ -304,6 +304,7 @@ export class AssistantView extends LitElement {
                     detail: { index: this.currentResponseIndex },
                 })
             );
+            this.requestUpdate();
         }
     }
 
@@ -315,6 +316,44 @@ export class AssistantView extends LitElement {
                     detail: { index: this.currentResponseIndex },
                 })
             );
+            this.requestUpdate();
+        }
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        
+        // Set up IPC listeners for keyboard shortcuts
+        if (window.require) {
+            const { ipcRenderer } = window.require('electron');
+            
+            this.handlePreviousResponse = () => {
+                console.log('Received navigate-previous-response message');
+                this.navigateToPreviousResponse();
+            };
+            
+            this.handleNextResponse = () => {
+                console.log('Received navigate-next-response message');
+                this.navigateToNextResponse();
+            };
+            
+            ipcRenderer.on('navigate-previous-response', this.handlePreviousResponse);
+            ipcRenderer.on('navigate-next-response', this.handleNextResponse);
+        }
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        
+        // Clean up IPC listeners
+        if (window.require) {
+            const { ipcRenderer } = window.require('electron');
+            if (this.handlePreviousResponse) {
+                ipcRenderer.removeListener('navigate-previous-response', this.handlePreviousResponse);
+            }
+            if (this.handleNextResponse) {
+                ipcRenderer.removeListener('navigate-next-response', this.handleNextResponse);
+            }
         }
     }
 

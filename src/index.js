@@ -191,6 +191,8 @@ function getDefaultKeybinds() {
         toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
         nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
         manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
+        previousResponse: isMac ? 'Cmd+[' : 'Ctrl+[',
+        nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
     };
 }
 
@@ -315,6 +317,32 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
             console.log(`Registered manualScreenshot: ${keybinds.manualScreenshot}`);
         } catch (error) {
             console.error(`Failed to register manualScreenshot (${keybinds.manualScreenshot}):`, error);
+        }
+    }
+
+    // Register previous response shortcut
+    if (keybinds.previousResponse) {
+        try {
+            globalShortcut.register(keybinds.previousResponse, () => {
+                console.log('Previous response shortcut triggered');
+                sendToRenderer('navigate-previous-response');
+            });
+            console.log(`Registered previousResponse: ${keybinds.previousResponse}`);
+        } catch (error) {
+            console.error(`Failed to register previousResponse (${keybinds.previousResponse}):`, error);
+        }
+    }
+
+    // Register next response shortcut
+    if (keybinds.nextResponse) {
+        try {
+            globalShortcut.register(keybinds.nextResponse, () => {
+                console.log('Next response shortcut triggered');
+                sendToRenderer('navigate-next-response');
+            });
+            console.log(`Registered nextResponse: ${keybinds.nextResponse}`);
+        } catch (error) {
+            console.error(`Failed to register nextResponse (${keybinds.nextResponse}):`, error);
         }
     }
 }

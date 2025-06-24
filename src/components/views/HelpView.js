@@ -248,6 +248,8 @@ export class HelpView extends LitElement {
             toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
             nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
             manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
+            previousResponse: isMac ? 'Cmd+[' : 'Ctrl+[',
+            nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
         };
     }
 
@@ -344,6 +346,18 @@ export class HelpView extends LitElement {
                         </div>
 
                         <div class="keyboard-group">
+                            <div class="keyboard-group-title">Response Navigation</div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-description">Previous response</span>
+                                <div class="shortcut-keys">${this.formatKeybind(this.keybinds.previousResponse)}</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-description">Next response</span>
+                                <div class="shortcut-keys">${this.formatKeybind(this.keybinds.nextResponse)}</div>
+                            </div>
+                        </div>
+
+                        <div class="keyboard-group">
                             <div class="keyboard-group-title">Text Input</div>
                             <div class="shortcut-item">
                                 <span class="shortcut-description">Send message to AI</span>
@@ -376,6 +390,7 @@ export class HelpView extends LitElement {
                         </div>
                         <div class="usage-step"><strong>Get AI Help:</strong> The AI will analyze your screen and audio to provide assistance</div>
                         <div class="usage-step"><strong>Text Messages:</strong> Type questions or requests to the AI using the text input</div>
+                        <div class="usage-step"><strong>Navigate Responses:</strong> Use ${this.formatKeybind(this.keybinds.previousResponse)} and ${this.formatKeybind(this.keybinds.nextResponse)} to browse through AI responses</div>
                     </div>
                 </div>
 
