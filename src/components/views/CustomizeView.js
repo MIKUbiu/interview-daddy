@@ -357,6 +357,80 @@ export class CustomizeView extends LitElement {
             border-color: var(--focus-border-color, #007aff);
             box-shadow: 0 0 0 2px var(--focus-shadow, rgba(0, 122, 255, 0.1));
         }
+
+        /* Slider styles */
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slider-value {
+            font-size: 11px;
+            color: var(--success-color, #34d399);
+            background: var(--success-background, rgba(52, 211, 153, 0.1));
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+            border: 1px solid var(--success-border, rgba(52, 211, 153, 0.2));
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+        }
+
+        .slider-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--input-background, rgba(0, 0, 0, 0.3));
+            outline: none;
+            border: 1px solid var(--input-border, rgba(255, 255, 255, 0.15));
+            cursor: pointer;
+        }
+
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--focus-border-color, #007aff);
+            cursor: pointer;
+            border: 2px solid var(--text-color, white);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider-input::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--focus-border-color, #007aff);
+            cursor: pointer;
+            border: 2px solid var(--text-color, white);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider-input:hover::-webkit-slider-thumb {
+            background: var(--text-input-button-hover, #0056b3);
+        }
+
+        .slider-input:hover::-moz-range-thumb {
+            background: var(--text-input-button-hover, #0056b3);
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4px;
+            font-size: 10px;
+            color: var(--description-color, rgba(255, 255, 255, 0.5));
+        }
     `;
 
     static properties = {
@@ -370,6 +444,7 @@ export class CustomizeView extends LitElement {
         maxTokensPerMin: { type: Number },
         throttleAtPercent: { type: Number },
         googleSearchEnabled: { type: Boolean },
+        backgroundTransparency: { type: Number },
         onProfileChange: { type: Function },
         onLanguageChange: { type: Function },
         onScreenshotIntervalChange: { type: Function },
@@ -405,10 +480,14 @@ export class CustomizeView extends LitElement {
         // Advanced mode default
         this.advancedMode = false;
 
+        // Background transparency default
+        this.backgroundTransparency = 0.8;
+
         this.loadKeybinds();
         this.loadRateLimitSettings();
         this.loadGoogleSearchSettings();
         this.loadAdvancedModeSettings();
+        this.loadBackgroundTransparency();
     }
 
     connectedCallback() {
@@ -806,6 +885,35 @@ export class CustomizeView extends LitElement {
         this.requestUpdate();
     }
 
+    loadBackgroundTransparency() {
+        const backgroundTransparency = localStorage.getItem('backgroundTransparency');
+        if (backgroundTransparency !== null) {
+            this.backgroundTransparency = parseFloat(backgroundTransparency) || 0.8;
+        }
+        this.updateBackgroundTransparency();
+    }
+
+    handleBackgroundTransparencyChange(e) {
+        this.backgroundTransparency = parseFloat(e.target.value);
+        localStorage.setItem('backgroundTransparency', this.backgroundTransparency.toString());
+        this.updateBackgroundTransparency();
+        this.requestUpdate();
+    }
+
+    updateBackgroundTransparency() {
+        const root = document.documentElement;
+        root.style.setProperty('--header-background', `rgba(0, 0, 0, ${this.backgroundTransparency})`);
+        root.style.setProperty('--main-content-background', `rgba(0, 0, 0, ${this.backgroundTransparency})`);
+        root.style.setProperty('--card-background', `rgba(255, 255, 255, ${this.backgroundTransparency * 0.05})`);
+        root.style.setProperty('--input-background', `rgba(0, 0, 0, ${this.backgroundTransparency * 0.375})`);
+        root.style.setProperty('--input-focus-background', `rgba(0, 0, 0, ${this.backgroundTransparency * 0.625})`);
+        root.style.setProperty('--button-background', `rgba(0, 0, 0, ${this.backgroundTransparency * 0.625})`);
+        root.style.setProperty('--preview-video-background', `rgba(0, 0, 0, ${this.backgroundTransparency * 1.125})`);
+        root.style.setProperty('--screen-option-background', `rgba(0, 0, 0, ${this.backgroundTransparency * 0.5})`);
+        root.style.setProperty('--screen-option-hover-background', `rgba(0, 0, 0, ${this.backgroundTransparency * 0.75})`);
+        root.style.setProperty('--scrollbar-background', `rgba(0, 0, 0, ${this.backgroundTransparency * 0.5})`);
+    }
+
     render() {
         const profiles = this.getProfiles();
         const languages = this.getLanguages();
@@ -910,6 +1018,31 @@ export class CustomizeView extends LitElement {
                                             ? 'Smaller window size with reduced padding and font sizes for minimal screen footprint'
                                             : 'Standard layout with comfortable spacing and font sizes'
                                     }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <div class="slider-container">
+                                <div class="slider-header">
+                                    <label class="form-label">Background Transparency</label>
+                                    <span class="slider-value">${Math.round(this.backgroundTransparency * 100)}%</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    class="slider-input"
+                                    min="0"
+                                    max="1"
+                                    step="0.01"
+                                    .value=${this.backgroundTransparency}
+                                    @input=${this.handleBackgroundTransparencyChange}
+                                />
+                                <div class="slider-labels">
+                                    <span>Transparent</span>
+                                    <span>Opaque</span>
+                                </div>
+                                <div class="form-description">
+                                    Adjust the transparency of the interface background elements
                                 </div>
                             </div>
                         </div>

@@ -390,7 +390,10 @@ export class HelpView extends LitElement {
                         </div>
                         <div class="usage-step"><strong>Get AI Help:</strong> The AI will analyze your screen and audio to provide assistance</div>
                         <div class="usage-step"><strong>Text Messages:</strong> Type questions or requests to the AI using the text input</div>
-                        <div class="usage-step"><strong>Navigate Responses:</strong> Use ${this.formatKeybind(this.keybinds.previousResponse)} and ${this.formatKeybind(this.keybinds.nextResponse)} to browse through AI responses</div>
+                        <div class="usage-step">
+                            <strong>Navigate Responses:</strong> Use ${this.formatKeybind(this.keybinds.previousResponse)} and
+                            ${this.formatKeybind(this.keybinds.nextResponse)} to browse through AI responses
+                        </div>
                     </div>
                 </div>
 
