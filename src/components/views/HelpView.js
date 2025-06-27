@@ -250,6 +250,8 @@ export class HelpView extends LitElement {
             manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
             previousResponse: isMac ? 'Cmd+[' : 'Ctrl+[',
             nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
+            scrollUp: isMac ? 'Cmd+Shift+Up' : 'Ctrl+Shift+Up',
+            scrollDown: isMac ? 'Cmd+Shift+Down' : 'Ctrl+Shift+Down',
         };
     }
 
@@ -354,6 +356,14 @@ export class HelpView extends LitElement {
                             <div class="shortcut-item">
                                 <span class="shortcut-description">Next response</span>
                                 <div class="shortcut-keys">${this.formatKeybind(this.keybinds.nextResponse)}</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-description">Scroll response up</span>
+                                <div class="shortcut-keys">${this.formatKeybind(this.keybinds.scrollUp)}</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-description">Scroll response down</span>
+                                <div class="shortcut-keys">${this.formatKeybind(this.keybinds.scrollDown)}</div>
                             </div>
                         </div>
 

@@ -445,6 +445,7 @@ export class CustomizeView extends LitElement {
         throttleAtPercent: { type: Number },
         googleSearchEnabled: { type: Boolean },
         backgroundTransparency: { type: Number },
+        fontSize: { type: Number },
         onProfileChange: { type: Function },
         onLanguageChange: { type: Function },
         onScreenshotIntervalChange: { type: Function },
@@ -483,11 +484,15 @@ export class CustomizeView extends LitElement {
         // Background transparency default
         this.backgroundTransparency = 0.8;
 
+        // Font size default (in pixels)
+        this.fontSize = 20;
+
         this.loadKeybinds();
         this.loadRateLimitSettings();
         this.loadGoogleSearchSettings();
         this.loadAdvancedModeSettings();
         this.loadBackgroundTransparency();
+        this.loadFontSize();
     }
 
     connectedCallback() {
@@ -619,6 +624,8 @@ export class CustomizeView extends LitElement {
             manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
             previousResponse: isMac ? 'Cmd+[' : 'Ctrl+[',
             nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
+            scrollUp: isMac ? 'Cmd+Shift+Up' : 'Ctrl+Shift+Up',
+            scrollDown: isMac ? 'Cmd+Shift+Down' : 'Ctrl+Shift+Down',
         };
     }
 
@@ -710,6 +717,16 @@ export class CustomizeView extends LitElement {
                 key: 'nextResponse',
                 name: 'Next Response',
                 description: 'Navigate to the next AI response',
+            },
+            {
+                key: 'scrollUp',
+                name: 'Scroll Response Up',
+                description: 'Scroll the AI response content up',
+            },
+            {
+                key: 'scrollDown',
+                name: 'Scroll Response Down',
+                description: 'Scroll the AI response content down',
             },
         ];
     }
@@ -914,6 +931,26 @@ export class CustomizeView extends LitElement {
         root.style.setProperty('--scrollbar-background', `rgba(0, 0, 0, ${this.backgroundTransparency * 0.5})`);
     }
 
+    loadFontSize() {
+        const fontSize = localStorage.getItem('fontSize');
+        if (fontSize !== null) {
+            this.fontSize = parseInt(fontSize, 10) || 20;
+        }
+        this.updateFontSize();
+    }
+
+    handleFontSizeChange(e) {
+        this.fontSize = parseInt(e.target.value, 10);
+        localStorage.setItem('fontSize', this.fontSize.toString());
+        this.updateFontSize();
+        this.requestUpdate();
+    }
+
+    updateFontSize() {
+        const root = document.documentElement;
+        root.style.setProperty('--response-font-size', `${this.fontSize}px`);
+    }
+
     render() {
         const profiles = this.getProfiles();
         const languages = this.getLanguages();
@@ -1043,6 +1080,31 @@ export class CustomizeView extends LitElement {
                                 </div>
                                 <div class="form-description">
                                     Adjust the transparency of the interface background elements
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <div class="slider-container">
+                                <div class="slider-header">
+                                    <label class="form-label">Response Font Size</label>
+                                    <span class="slider-value">${this.fontSize}px</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    class="slider-input"
+                                    min="12"
+                                    max="32"
+                                    step="1"
+                                    .value=${this.fontSize}
+                                    @input=${this.handleFontSizeChange}
+                                />
+                                <div class="slider-labels">
+                                    <span>12px</span>
+                                    <span>32px</span>
+                                </div>
+                                <div class="form-description">
+                                    Adjust the font size of AI response text in the assistant view
                                 </div>
                             </div>
                         </div>

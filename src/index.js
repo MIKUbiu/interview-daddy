@@ -193,6 +193,8 @@ function getDefaultKeybinds() {
         manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
         previousResponse: isMac ? 'Cmd+[' : 'Ctrl+[',
         nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
+        scrollUp: isMac ? 'Cmd+Shift+Up' : 'Ctrl+Shift+Up',
+        scrollDown: isMac ? 'Cmd+Shift+Down' : 'Ctrl+Shift+Down',
     };
 }
 
@@ -286,7 +288,7 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
                 console.log('Next step shortcut triggered');
                 try {
                     if (geminiSession) {
-                        await geminiSession.sendRealtimeInput({ text: 'What should be the next step here' });
+                        await geminiSession.sendRealtimeInput({ text: 'Help me on this page, give me the answer no bs, complete answer' });
                         console.log('Sent "next step" message to Gemini');
                     } else {
                         console.log('No active Gemini session');
@@ -345,6 +347,32 @@ function updateGlobalShortcuts(keybinds, mainWindow) {
             console.error(`Failed to register nextResponse (${keybinds.nextResponse}):`, error);
         }
     }
+
+    // Register scroll up shortcut
+    if (keybinds.scrollUp) {
+        try {
+            globalShortcut.register(keybinds.scrollUp, () => {
+                console.log('Scroll up shortcut triggered');
+                sendToRenderer('scroll-response-up');
+            });
+            console.log(`Registered scrollUp: ${keybinds.scrollUp}`);
+        } catch (error) {
+            console.error(`Failed to register scrollUp (${keybinds.scrollUp}):`, error);
+        }
+    }
+
+    // Register scroll down shortcut
+    if (keybinds.scrollDown) {
+        try {
+            globalShortcut.register(keybinds.scrollDown, () => {
+                console.log('Scroll down shortcut triggered');
+                sendToRenderer('scroll-response-down');
+            });
+            console.log(`Registered scrollDown: ${keybinds.scrollDown}`);
+        } catch (error) {
+            console.error(`Failed to register scrollDown (${keybinds.scrollDown}):`, error);
+        }
+    }
 }
 
 async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'interview', language = 'en-US') {
@@ -372,7 +400,7 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
 
     try {
         const session = await client.live.connect({
-            model: 'gemini-2.0-flash-live-001',
+            model: 'gemini-live-2.5-flash-preview',
             callbacks: {
                 onopen: function () {
                     sendToRenderer('update-status', 'Connected to Gemini - Starting recording...');
@@ -865,7 +893,11 @@ ipcMain.handle('update-layout-mode', async (event, layoutMode) => {
             console.log('Current window size:', currentWidth, 'x', currentHeight);
 
             if (currentWidth !== targetWidth || currentHeight !== targetHeight) {
+                // Temporarily enable resizing before changing size
+                mainWindow.setResizable(true);
                 mainWindow.setSize(targetWidth, targetHeight);
+                // Disable resizing after the resize is complete
+                mainWindow.setResizable(false);
                 console.log(`Window resized to ${layoutMode} mode: ${targetWidth}x${targetHeight}`);
             } else {
                 console.log(`Window already in ${layoutMode} size`);
@@ -943,7 +975,11 @@ ipcMain.handle('resize-for-view', async (event, viewName, layoutMode = 'normal')
             console.log('Current window size:', currentWidth, 'x', currentHeight);
 
             if (currentWidth !== targetWidth || currentHeight !== targetHeight) {
+                // Temporarily enable resizing before changing size
+                mainWindow.setResizable(true);
                 mainWindow.setSize(targetWidth, targetHeight);
+                // Disable resizing after the resize is complete
+                mainWindow.setResizable(false);
                 console.log(`Window resized for ${viewName} view (${layoutMode}): ${targetWidth}x${targetHeight}`);
             } else {
                 console.log(`Window already correct size for ${viewName} view`);

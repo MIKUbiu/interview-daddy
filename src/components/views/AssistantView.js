@@ -17,10 +17,11 @@ export class AssistantView extends LitElement {
             height: calc(100% - 60px);
             overflow-y: auto;
             border-radius: 10px;
-            font-size: 20px;
+            font-size: var(--response-font-size, 18px);
             line-height: 1.6;
             background: var(--main-content-background);
             padding: 16px;
+            scroll-behavior: smooth;
         }
 
         /* Markdown styling */
@@ -320,8 +321,36 @@ export class AssistantView extends LitElement {
         }
     }
 
+    scrollResponseUp() {
+        const container = this.shadowRoot.querySelector('.response-container');
+        if (container) {
+            const scrollAmount = container.clientHeight * 0.3; // Scroll 30% of container height
+            container.scrollTop = Math.max(0, container.scrollTop - scrollAmount);
+        }
+    }
+
+    scrollResponseDown() {
+        const container = this.shadowRoot.querySelector('.response-container');
+        if (container) {
+            const scrollAmount = container.clientHeight * 0.3; // Scroll 30% of container height
+            container.scrollTop = Math.min(container.scrollHeight - container.clientHeight, container.scrollTop + scrollAmount);
+        }
+    }
+
+    loadFontSize() {
+        const fontSize = localStorage.getItem('fontSize');
+        if (fontSize !== null) {
+            const fontSizeValue = parseInt(fontSize, 10) || 20;
+            const root = document.documentElement;
+            root.style.setProperty('--response-font-size', `${fontSizeValue}px`);
+        }
+    }
+
     connectedCallback() {
         super.connectedCallback();
+
+        // Load and apply font size
+        this.loadFontSize();
 
         // Set up IPC listeners for keyboard shortcuts
         if (window.require) {
@@ -337,8 +366,20 @@ export class AssistantView extends LitElement {
                 this.navigateToNextResponse();
             };
 
+            this.handleScrollUp = () => {
+                console.log('Received scroll-response-up message');
+                this.scrollResponseUp();
+            };
+
+            this.handleScrollDown = () => {
+                console.log('Received scroll-response-down message');
+                this.scrollResponseDown();
+            };
+
             ipcRenderer.on('navigate-previous-response', this.handlePreviousResponse);
             ipcRenderer.on('navigate-next-response', this.handleNextResponse);
+            ipcRenderer.on('scroll-response-up', this.handleScrollUp);
+            ipcRenderer.on('scroll-response-down', this.handleScrollDown);
         }
     }
 
@@ -353,6 +394,12 @@ export class AssistantView extends LitElement {
             }
             if (this.handleNextResponse) {
                 ipcRenderer.removeListener('navigate-next-response', this.handleNextResponse);
+            }
+            if (this.handleScrollUp) {
+                ipcRenderer.removeListener('scroll-response-up', this.handleScrollUp);
+            }
+            if (this.handleScrollDown) {
+                ipcRenderer.removeListener('scroll-response-down', this.handleScrollDown);
             }
         }
     }
