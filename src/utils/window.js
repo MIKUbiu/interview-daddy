@@ -83,20 +83,32 @@ function createWindow(sendToRenderer, geminiSessionRef) {
                 .executeJavaScript(
                     `
                 try {
-                    const saved = localStorage.getItem('customKeybinds');
-                    return saved ? JSON.parse(saved) : null;
+                    const savedKeybinds = localStorage.getItem('customKeybinds');
+                    const savedContentProtection = localStorage.getItem('contentProtection');
+                    
+                    return {
+                        keybinds: savedKeybinds ? JSON.parse(savedKeybinds) : null,
+                        contentProtection: savedContentProtection !== null ? savedContentProtection === 'true' : true
+                    };
                 } catch (e) {
-                    return null;
+                    return { keybinds: null, contentProtection: true };
                 }
             `
                 )
-                .then(savedKeybinds => {
-                    if (savedKeybinds) {
-                        keybinds = { ...defaultKeybinds, ...savedKeybinds };
+                .then(savedSettings => {
+                    if (savedSettings.keybinds) {
+                        keybinds = { ...defaultKeybinds, ...savedSettings.keybinds };
                     }
+
+                    // Apply content protection setting
+                    mainWindow.setContentProtection(savedSettings.contentProtection);
+                    console.log('Content protection loaded from settings:', savedSettings.contentProtection);
+
                     updateGlobalShortcuts(keybinds, mainWindow, sendToRenderer, geminiSessionRef);
                 })
                 .catch(() => {
+                    // Default to content protection enabled
+                    mainWindow.setContentProtection(true);
                     updateGlobalShortcuts(keybinds, mainWindow, sendToRenderer, geminiSessionRef);
                 });
         }, 150);
@@ -453,5 +465,5 @@ module.exports = {
     createWindow,
     getDefaultKeybinds,
     updateGlobalShortcuts,
-    setupWindowIpcHandlers
-}; 
+    setupWindowIpcHandlers,
+};

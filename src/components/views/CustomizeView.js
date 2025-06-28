@@ -453,6 +453,7 @@ export class CustomizeView extends LitElement {
         onLayoutModeChange: { type: Function },
         advancedMode: { type: Boolean },
         onAdvancedModeChange: { type: Function },
+        contentProtection: { type: Boolean },
     };
 
     constructor() {
@@ -487,12 +488,16 @@ export class CustomizeView extends LitElement {
         // Font size default (in pixels)
         this.fontSize = 20;
 
+        // Content protection default (true = invisible to screenshare)
+        this.contentProtection = true;
+
         this.loadKeybinds();
         this.loadRateLimitSettings();
         this.loadGoogleSearchSettings();
         this.loadAdvancedModeSettings();
         this.loadBackgroundTransparency();
         this.loadFontSize();
+        this.loadContentProtectionSettings();
     }
 
     connectedCallback() {
@@ -951,6 +956,30 @@ export class CustomizeView extends LitElement {
         root.style.setProperty('--response-font-size', `${this.fontSize}px`);
     }
 
+    loadContentProtectionSettings() {
+        const contentProtection = localStorage.getItem('contentProtection');
+        if (contentProtection !== null) {
+            this.contentProtection = contentProtection === 'true';
+        }
+    }
+
+    async handleContentProtectionChange(e) {
+        this.contentProtection = e.target.checked;
+        localStorage.setItem('contentProtection', this.contentProtection.toString());
+
+        // Notify main process if available
+        if (window.require) {
+            try {
+                const { ipcRenderer } = window.require('electron');
+                await ipcRenderer.invoke('update-content-protection', this.contentProtection);
+            } catch (error) {
+                console.error('Failed to notify main process about content protection change:', error);
+            }
+        }
+
+        this.requestUpdate();
+    }
+
     render() {
         const profiles = this.getProfiles();
         const languages = this.getLanguages();
@@ -1106,6 +1135,23 @@ export class CustomizeView extends LitElement {
                                 <div class="form-description">
                                     Adjust the font size of AI response text in the assistant view
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <div class="checkbox-group">
+                                <input
+                                    type="checkbox"
+                                    class="checkbox-input"
+                                    id="content-protection"
+                                    .checked=${this.contentProtection}
+                                    @change=${this.handleContentProtectionChange}
+                                />
+                                <label for="content-protection" class="checkbox-label">Hide from screen recordings</label>
+                            </div>
+                            <div class="form-description" style="margin-left: 24px; margin-top: -8px;">
+                                Prevent the application window from appearing in screenshots, screen recordings, and screen sharing
+                                <br /><strong>Note:</strong> When enabled, the window content will be hidden from external capture
                             </div>
                         </div>
                     </div>

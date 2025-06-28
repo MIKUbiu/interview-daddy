@@ -509,5 +509,5 @@ module.exports = {
     convertStereoToMono,
     stopMacOSAudioCapture,
     sendAudioToGemini,
-    setupGeminiIpcHandlers
-}; 
+    setupGeminiIpcHandlers,
+};

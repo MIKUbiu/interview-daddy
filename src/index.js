@@ -64,4 +64,17 @@ function setupGeneralIpcHandlers() {
             updateGlobalShortcuts(newKeybinds, mainWindow, sendToRenderer, geminiSessionRef);
         }
     });
+
+    ipcMain.handle('update-content-protection', async (event, contentProtection) => {
+        try {
+            if (mainWindow) {
+                mainWindow.setContentProtection(contentProtection);
+                console.log('Content protection updated:', contentProtection);
+            }
+            return { success: true };
+        } catch (error) {
+            console.error('Error updating content protection:', error);
+            return { success: false, error: error.message };
+        }
+    });
 }
