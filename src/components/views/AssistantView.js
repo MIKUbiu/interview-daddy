@@ -438,7 +438,6 @@ export class AssistantView extends LitElement {
         super.updated(changedProperties);
         if (changedProperties.has('responses') || changedProperties.has('currentResponseIndex')) {
             this.updateResponseContent();
-            this.scrollToBottom();
         }
     }
 
