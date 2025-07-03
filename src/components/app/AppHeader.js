@@ -56,6 +56,8 @@ export class AppHeader extends LitElement {
             font-size: var(--header-font-size-small);
             font-weight: 500;
             display: flex;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
         }
 
         .icon-button svg {
@@ -65,6 +67,7 @@ export class AppHeader extends LitElement {
 
         .icon-button:hover {
             background: var(--hover-background);
+            opacity: 1;
         }
 
         .button:hover {

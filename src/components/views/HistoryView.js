@@ -30,6 +30,7 @@ export class HistoryView extends LitElement {
             flex: 1;
             overflow-y: auto;
             margin-bottom: 16px;
+            padding-bottom: 20px;
         }
 
         .session-item {
@@ -87,6 +88,7 @@ export class HistoryView extends LitElement {
             border: 1px solid var(--button-border);
             border-radius: 6px;
             padding: 12px;
+            padding-bottom: 20px;
         }
 
         .message {
@@ -237,7 +239,7 @@ export class HistoryView extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         // Resize window for this view
-        resizeLayout('history');
+        resizeLayout();
     }
 
     async loadSessions() {

@@ -442,6 +442,12 @@ async function captureManualScreenshot(imageQuality = null) {
     console.log('Manual screenshot triggered');
     const quality = imageQuality || currentImageQuality;
     await captureScreenshot(quality, true); // Pass true for isManual
+    await new Promise(resolve => setTimeout(resolve, 2000)); // TODO shitty hack
+    await sendTextMessage(`Help me on this page, give me the answer no bs, complete answer.
+        So if its a code question, give me the approach in few bullet points, then the entire code. Also if theres anything else i need to know, tell me.
+        If its a question about the website, give me the answer no bs, complete answer.
+        If its a mcq question, give me the answer no bs, complete answer.
+        `);
 }
 
 // Expose functions to global scope for external access
@@ -601,15 +607,60 @@ ipcRenderer.on('save-conversation-turn', async (event, data) => {
 // Initialize conversation storage when renderer loads
 initConversationStorage().catch(console.error);
 
+// Handle shortcuts based on current view
+function handleShortcut(shortcutKey) {
+    console.log('Handling shortcut:', shortcutKey);
+
+    // Get current view from the app
+    const currentView = window.cheddar.getCurrentView ? window.cheddar.getCurrentView() : null;
+    console.log('Current view:', currentView);
+
+    if (shortcutKey === 'ctrl+enter' || shortcutKey === 'cmd+enter') {
+        if (currentView === 'main') {
+            // Trigger the start session from main view
+            console.log('Triggering start session from main view');
+
+            // First try to get the app component and call handleStart directly
+            const appElement = document.querySelector('cheating-daddy-app');
+            if (appElement && typeof appElement.handleStart === 'function') {
+                appElement.handleStart();
+            } else {
+                // Fallback: simulate click on the start button
+                const mainView = document.querySelector('main-view');
+                if (mainView) {
+                    const startButton = mainView.shadowRoot?.querySelector('.start-button');
+                    if (startButton && !startButton.classList.contains('initializing')) {
+                        startButton.click();
+                    } else {
+                        console.warn('Start button not available or initializing');
+                    }
+                } else {
+                    console.warn('Could not find main-view element');
+                }
+            }
+        } else {
+            // In other views, take manual screenshot
+            console.log('Taking manual screenshot from current view');
+            captureManualScreenshot();
+        }
+    }
+}
+
 window.cheddar = {
     initializeGemini,
     startCapture,
     stopCapture,
     sendTextMessage,
+    handleShortcut,
     // Conversation history functions
     getAllConversationSessions,
     getConversationSession,
     initConversationStorage,
+    // Content protection function
+    getContentProtection: () => {
+        const contentProtection = localStorage.getItem('contentProtection');
+        return contentProtection !== null ? contentProtection === 'true' : true;
+    },
     isLinux: isLinux,
     isMacOS: isMacOS,
     e: cheddarElement,

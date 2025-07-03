@@ -21,6 +21,7 @@ export class HelpView extends LitElement {
         .help-container {
             display: grid;
             gap: 12px;
+            padding-bottom: 20px;
         }
 
         .option-group {
@@ -234,7 +235,7 @@ export class HelpView extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         // Resize window for this view
-        resizeLayout('help');
+        resizeLayout();
     }
 
     getDefaultKeybinds() {
@@ -247,7 +248,6 @@ export class HelpView extends LitElement {
             toggleVisibility: isMac ? 'Cmd+\\' : 'Ctrl+\\',
             toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
             nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
-            manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
             previousResponse: isMac ? 'Cmd+[' : 'Ctrl+[',
             nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
             scrollUp: isMac ? 'Cmd+Shift+Up' : 'Ctrl+Shift+Up',
@@ -338,12 +338,8 @@ export class HelpView extends LitElement {
                         <div class="keyboard-group">
                             <div class="keyboard-group-title">AI Actions</div>
                             <div class="shortcut-item">
-                                <span class="shortcut-description">Ask for next step</span>
+                                <span class="shortcut-description">Take screenshot and ask for next step</span>
                                 <div class="shortcut-keys">${this.formatKeybind(this.keybinds.nextStep)}</div>
-                            </div>
-                            <div class="shortcut-item">
-                                <span class="shortcut-description">Take manual screenshot</span>
-                                <div class="shortcut-keys">${this.formatKeybind(this.keybinds.manualScreenshot)}</div>
                             </div>
                         </div>
 

@@ -1,18 +1,14 @@
 /**
- * Utility function to resize the window for a specific view
- * @param {string} viewName - The name of the view (customize, help, history, advanced, main, assistant, onboarding)
- * @param {string} layoutMode - The layout mode (normal or compact) - defaults to reading from localStorage
+ * Utility function to resize the window for the current view
+ * The main process will call back to get the current view name and layout mode
  */
-export async function resizeLayout(viewName) {
+export async function resizeLayout() {
     try {
-        // Get current layout mode from localStorage
-        const layoutMode = localStorage.getItem('layoutMode') || 'normal';
-
         if (window.require) {
             const { ipcRenderer } = window.require('electron');
-            const result = await ipcRenderer.invoke('resize-for-view', viewName, layoutMode);
+            const result = await ipcRenderer.invoke('update-sizes');
             if (result.success) {
-                console.log(`Window resized for ${viewName} view`);
+                console.log('Window resized for current view');
             } else {
                 console.error('Failed to resize window:', result.error);
             }
@@ -24,7 +20,7 @@ export async function resizeLayout(viewName) {
 
 /**
  * Utility function to get the current view name from a view component
- * This can be overridden by passing a specific viewName to resizeLayout
+ * Used for mapping custom element tag names to view names
  * @param {string} tagName - The tag name of the custom element (e.g., 'customize-view')
  * @returns {string} - The view name for resizing
  */

@@ -23,6 +23,7 @@ export class CustomizeView extends LitElement {
         .settings-container {
             display: grid;
             gap: 12px;
+            padding-bottom: 20px;
         }
 
         .settings-section {
@@ -308,42 +309,6 @@ export class CustomizeView extends LitElement {
             user-select: none;
         }
 
-        .rate-limit-controls {
-            margin-left: 22px;
-            opacity: 0.7;
-            transition: opacity 0.15s ease;
-        }
-
-        .rate-limit-controls.enabled {
-            opacity: 1;
-        }
-
-        .rate-limit-reset {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--table-border, rgba(255, 255, 255, 0.08));
-        }
-
-        .rate-limit-warning {
-            background: var(--warning-background, rgba(251, 191, 36, 0.08));
-            border: 1px solid var(--warning-border, rgba(251, 191, 36, 0.2));
-            border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 12px;
-            font-size: 11px;
-            color: var(--warning-color, #fbbf24);
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            line-height: 1.4;
-        }
-
-        .rate-limit-warning-icon {
-            flex-shrink: 0;
-            font-size: 12px;
-            margin-top: 1px;
-        }
-
         /* Better focus indicators */
         .form-control:focus-visible {
             outline: none;
@@ -440,9 +405,6 @@ export class CustomizeView extends LitElement {
         selectedImageQuality: { type: String },
         layoutMode: { type: String },
         keybinds: { type: Object },
-        throttleTokens: { type: Boolean },
-        maxTokensPerMin: { type: Number },
-        throttleAtPercent: { type: Number },
         googleSearchEnabled: { type: Boolean },
         backgroundTransparency: { type: Number },
         fontSize: { type: Number },
@@ -453,7 +415,6 @@ export class CustomizeView extends LitElement {
         onLayoutModeChange: { type: Function },
         advancedMode: { type: Boolean },
         onAdvancedModeChange: { type: Function },
-        contentProtection: { type: Boolean },
     };
 
     constructor() {
@@ -471,11 +432,6 @@ export class CustomizeView extends LitElement {
         this.onLayoutModeChange = () => {};
         this.onAdvancedModeChange = () => {};
 
-        // Rate limiting defaults
-        this.throttleTokens = true;
-        this.maxTokensPerMin = 1000000;
-        this.throttleAtPercent = 75;
-
         // Google Search default
         this.googleSearchEnabled = true;
 
@@ -488,16 +444,11 @@ export class CustomizeView extends LitElement {
         // Font size default (in pixels)
         this.fontSize = 20;
 
-        // Content protection default (true = invisible to screenshare)
-        this.contentProtection = true;
-
         this.loadKeybinds();
-        this.loadRateLimitSettings();
         this.loadGoogleSearchSettings();
         this.loadAdvancedModeSettings();
         this.loadBackgroundTransparency();
         this.loadFontSize();
-        this.loadContentProtectionSettings();
     }
 
     connectedCallback() {
@@ -505,7 +456,7 @@ export class CustomizeView extends LitElement {
         // Load layout mode for display purposes
         this.loadLayoutMode();
         // Resize window for this view
-        resizeLayout('customize');
+        resizeLayout();
     }
 
     getProfiles() {
@@ -626,7 +577,6 @@ export class CustomizeView extends LitElement {
             toggleVisibility: isMac ? 'Cmd+\\' : 'Ctrl+\\',
             toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
             nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
-            manualScreenshot: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
             previousResponse: isMac ? 'Cmd+[' : 'Ctrl+[',
             nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
             scrollUp: isMac ? 'Cmd+Shift+Up' : 'Ctrl+Shift+Up',
@@ -706,12 +656,7 @@ export class CustomizeView extends LitElement {
             {
                 key: 'nextStep',
                 name: 'Ask Next Step',
-                description: 'Ask AI for the next step suggestion',
-            },
-            {
-                key: 'manualScreenshot',
-                name: 'Manual Screenshot',
-                description: 'Take a manual screenshot for AI analysis',
+                description: 'Take screenshot and ask AI for the next step suggestion',
             },
             {
                 key: 'previousResponse',
@@ -811,57 +756,6 @@ export class CustomizeView extends LitElement {
         e.target.blur();
     }
 
-    // Rate limiting methods
-    loadRateLimitSettings() {
-        const throttleTokens = localStorage.getItem('throttleTokens');
-        const maxTokensPerMin = localStorage.getItem('maxTokensPerMin');
-        const throttleAtPercent = localStorage.getItem('throttleAtPercent');
-
-        if (throttleTokens !== null) {
-            this.throttleTokens = throttleTokens === 'true';
-        }
-        if (maxTokensPerMin !== null) {
-            this.maxTokensPerMin = parseInt(maxTokensPerMin, 10) || 1000000;
-        }
-        if (throttleAtPercent !== null) {
-            this.throttleAtPercent = parseInt(throttleAtPercent, 10) || 75;
-        }
-    }
-
-    handleThrottleTokensChange(e) {
-        this.throttleTokens = e.target.checked;
-        localStorage.setItem('throttleTokens', this.throttleTokens.toString());
-        this.requestUpdate();
-    }
-
-    handleMaxTokensChange(e) {
-        const value = parseInt(e.target.value, 10);
-        if (!isNaN(value) && value > 0) {
-            this.maxTokensPerMin = value;
-            localStorage.setItem('maxTokensPerMin', this.maxTokensPerMin.toString());
-        }
-    }
-
-    handleThrottlePercentChange(e) {
-        const value = parseInt(e.target.value, 10);
-        if (!isNaN(value) && value >= 0 && value <= 100) {
-            this.throttleAtPercent = value;
-            localStorage.setItem('throttleAtPercent', this.throttleAtPercent.toString());
-        }
-    }
-
-    resetRateLimitSettings() {
-        this.throttleTokens = true;
-        this.maxTokensPerMin = 1000000;
-        this.throttleAtPercent = 75;
-
-        localStorage.removeItem('throttleTokens');
-        localStorage.removeItem('maxTokensPerMin');
-        localStorage.removeItem('throttleAtPercent');
-
-        this.requestUpdate();
-    }
-
     loadGoogleSearchSettings() {
         const googleSearchEnabled = localStorage.getItem('googleSearchEnabled');
         if (googleSearchEnabled !== null) {
@@ -954,30 +848,6 @@ export class CustomizeView extends LitElement {
     updateFontSize() {
         const root = document.documentElement;
         root.style.setProperty('--response-font-size', `${this.fontSize}px`);
-    }
-
-    loadContentProtectionSettings() {
-        const contentProtection = localStorage.getItem('contentProtection');
-        if (contentProtection !== null) {
-            this.contentProtection = contentProtection === 'true';
-        }
-    }
-
-    async handleContentProtectionChange(e) {
-        this.contentProtection = e.target.checked;
-        localStorage.setItem('contentProtection', this.contentProtection.toString());
-
-        // Notify main process if available
-        if (window.require) {
-            try {
-                const { ipcRenderer } = window.require('electron');
-                await ipcRenderer.invoke('update-content-protection', this.contentProtection);
-            } catch (error) {
-                console.error('Failed to notify main process about content protection change:', error);
-            }
-        }
-
-        this.requestUpdate();
     }
 
     render() {
@@ -1138,22 +1008,7 @@ export class CustomizeView extends LitElement {
                             </div>
                         </div>
 
-                        <div class="form-group full-width">
-                            <div class="checkbox-group">
-                                <input
-                                    type="checkbox"
-                                    class="checkbox-input"
-                                    id="content-protection"
-                                    .checked=${this.contentProtection}
-                                    @change=${this.handleContentProtectionChange}
-                                />
-                                <label for="content-protection" class="checkbox-label">Hide from screen recordings</label>
-                            </div>
-                            <div class="form-description" style="margin-left: 24px; margin-top: -8px;">
-                                Prevent the application window from appearing in screenshots, screen recordings, and screen sharing
-                                <br /><strong>Note:</strong> When enabled, the window content will be hidden from external capture
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -1182,7 +1037,7 @@ export class CustomizeView extends LitElement {
                                 <div class="form-description">
                                     ${
                                         this.selectedScreenshotInterval === 'manual'
-                                            ? 'Screenshots will only be taken when you press the manual capture key (⌘+Shift+S)'
+                                            ? 'Screenshots will only be taken when you use the "Ask Next Step" shortcut'
                                             : 'Automatic screenshots will be taken at the specified interval'
                                     }
                                 </div>
@@ -1262,77 +1117,7 @@ export class CustomizeView extends LitElement {
                     </table>
                 </div>
 
-                <!-- Rate Limiting Section -->
-                <div class="settings-section">
-                    <div class="section-title">
-                        <span>Rate Limiting</span>
-                    </div>
 
-                    <div class="rate-limit-warning">
-                        <span class="rate-limit-warning-icon">⚠️</span>
-                        <span
-                            ><strong>Warning:</strong> Don't mess with these settings if you don't know what this is about. Incorrect rate limiting
-                            settings may cause the application to stop working properly or hit API limits unexpectedly.</span
-                        >
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="checkbox-group">
-                            <input
-                                type="checkbox"
-                                class="checkbox-input"
-                                id="throttle-tokens"
-                                .checked=${this.throttleTokens}
-                                @change=${this.handleThrottleTokensChange}
-                            />
-                            <label for="throttle-tokens" class="checkbox-label"> Throttle tokens when close to rate limit </label>
-                        </div>
-
-                        <div class="rate-limit-controls ${this.throttleTokens ? 'enabled' : ''}">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">Max Allowed Tokens Per Minute</label>
-                                    <input
-                                        type="number"
-                                        class="form-control"
-                                        .value=${this.maxTokensPerMin}
-                                        min="1000"
-                                        max="10000000"
-                                        step="1000"
-                                        @input=${this.handleMaxTokensChange}
-                                        ?disabled=${!this.throttleTokens}
-                                    />
-                                    <div class="form-description">Maximum number of tokens allowed per minute before throttling kicks in</div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Throttle At Percent</label>
-                                    <input
-                                        type="number"
-                                        class="form-control"
-                                        .value=${this.throttleAtPercent}
-                                        min="1"
-                                        max="99"
-                                        step="1"
-                                        @input=${this.handleThrottlePercentChange}
-                                        ?disabled=${!this.throttleTokens}
-                                    />
-                                    <div class="form-description">
-                                        Start throttling when this percentage of the limit is reached (${this.throttleAtPercent}% =
-                                        ${Math.floor((this.maxTokensPerMin * this.throttleAtPercent) / 100)} tokens)
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="rate-limit-reset">
-                                <button class="reset-keybinds-button" @click=${this.resetRateLimitSettings} ?disabled=${!this.throttleTokens}>
-                                    Reset
-                                </button>
-                                <div class="form-description" style="margin-top: 8px;">Reset rate limiting settings to default values</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Google Search Section -->
                 <div class="settings-section">
