@@ -122,9 +122,7 @@ export class CheatingDaddyApp extends LitElement {
 
     constructor() {
         super();
-        // Check if onboarding has been completed
-        const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-        this.currentView = onboardingCompleted ? 'main' : 'onboarding';
+        this.currentView = localStorage.getItem('onboardingCompleted') ? 'main' : 'onboarding';
         this.statusText = '';
         this.startTime = null;
         this.isRecording = false;
@@ -160,9 +158,6 @@ export class CheatingDaddyApp extends LitElement {
                 this._isClickThrough = isEnabled;
             });
         }
-
-        // Add functions to window.cheddar for IPC callbacks
-        this.setupCheddarCallbacks();
     }
 
     disconnectedCallback() {
@@ -175,21 +170,7 @@ export class CheatingDaddyApp extends LitElement {
         }
     }
 
-    setupCheddarCallbacks() {
-        // Initialize window.cheddar if it doesn't exist
-        if (!window.cheddar) {
-            window.cheddar = {};
-        }
 
-        // Add functions to get current view and layout mode
-        window.cheddar.getCurrentView = () => {
-            return this.currentView;
-        };
-
-        window.cheddar.getLayoutMode = () => {
-            return this.layoutMode;
-        };
-    }
 
     setStatus(text) {
         this.statusText = text;
@@ -231,9 +212,7 @@ export class CheatingDaddyApp extends LitElement {
         if (this.currentView === 'customize' || this.currentView === 'help' || this.currentView === 'history') {
             this.currentView = 'main';
         } else if (this.currentView === 'assistant') {
-            if (window.cheddar) {
-                window.cheddar.stopCapture();
-            }
+            cheddar.stopCapture();
 
             // Close the session
             if (window.require) {
@@ -272,11 +251,9 @@ export class CheatingDaddyApp extends LitElement {
             return;
         }
 
-        if (window.cheddar) {
-            await window.cheddar.initializeGemini(this.selectedProfile, this.selectedLanguage);
-            // Pass the screenshot interval as string (including 'manual' option)
-            window.cheddar.startCapture(this.selectedScreenshotInterval, this.selectedImageQuality);
-        }
+        await cheddar.initializeGemini(this.selectedProfile, this.selectedLanguage);
+        // Pass the screenshot interval as string (including 'manual' option)
+        cheddar.startCapture(this.selectedScreenshotInterval, this.selectedImageQuality);
         this.responses = [];
         this.currentResponseIndex = -1;
         this.startTime = Date.now();
@@ -328,15 +305,13 @@ export class CheatingDaddyApp extends LitElement {
 
     // Assistant view event handlers
     async handleSendText(message) {
-        if (window.cheddar) {
-            const result = await window.cheddar.sendTextMessage(message);
+        const result = await cheddar.sendTextMessage(message);
 
-            if (!result.success) {
-                console.error('Failed to send message:', result.error);
-                this.setStatus('Error sending message: ' + result.error);
-            } else {
-                this.setStatus('Message sent...');
-            }
+        if (!result.success) {
+            console.error('Failed to send message:', result.error);
+            this.setStatus('Error sending message: ' + result.error);
+        } else {
+            this.setStatus('Message sent...');
         }
     }
 
