@@ -248,6 +248,7 @@ async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'int
                             console.log(part);
                             if (part.text) {
                                 messageBuffer += part.text;
+                                sendToRenderer('update-response', messageBuffer);
                             }
                         }
                     }
