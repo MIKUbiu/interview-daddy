@@ -171,43 +171,6 @@ export class CheatingDaddyApp extends LitElement {
             -webkit-app-region: no-drag;
         }
 
-        .update-btn {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            width: 100%;
-            padding: var(--space-sm) var(--space-md);
-            border-radius: var(--radius-md);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            background: rgba(239, 68, 68, 0.08);
-            color: var(--danger);
-            font-size: var(--font-size-sm);
-            font-weight: var(--font-weight-medium);
-            cursor: pointer;
-            text-align: left;
-            transition: background var(--transition), border-color var(--transition);
-            animation: update-wobble 5s ease-in-out infinite;
-        }
-
-        .update-btn:hover {
-            background: rgba(239, 68, 68, 0.14);
-            border-color: rgba(239, 68, 68, 0.35);
-        }
-
-        @keyframes update-wobble {
-            0%, 90%, 100% { transform: rotate(0deg); }
-            92% { transform: rotate(-2deg); }
-            94% { transform: rotate(2deg); }
-            96% { transform: rotate(-1.5deg); }
-            98% { transform: rotate(1.5deg); }
-        }
-
-        .update-btn svg {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-        }
-
         .version-text {
             font-size: var(--font-size-xs);
             color: var(--text-muted);
@@ -358,7 +321,6 @@ export class CheatingDaddyApp extends LitElement {
         _awaitingNewResponse: { state: true },
         shouldAnimateResponse: { type: Boolean },
         _storageLoaded: { state: true },
-        _updateAvailable: { state: true },
     };
 
     constructor() {
@@ -381,31 +343,16 @@ export class CheatingDaddyApp extends LitElement {
         this.shouldAnimateResponse = false;
         this._storageLoaded = false;
         this._timerInterval = null;
-        this._updateAvailable = false;
         this._localVersion = '';
 
         this._loadFromStorage();
-        this._checkForUpdates();
+        this._loadVersion();
     }
 
-    async _checkForUpdates() {
+    async _loadVersion() {
         try {
             this._localVersion = await cheatingDaddy.getVersion();
             this.requestUpdate();
-
-            const res = await fetch('https://raw.githubusercontent.com/sohzm/cheating-daddy/refs/heads/master/package.json');
-            if (!res.ok) return;
-            const remote = await res.json();
-            const remoteVersion = remote.version;
-
-            const toNum = v => v.split('.').map(Number);
-            const [rMaj, rMin, rPatch] = toNum(remoteVersion);
-            const [lMaj, lMin, lPatch] = toNum(this._localVersion);
-
-            if (rMaj > lMaj || (rMaj === lMaj && rMin > lMin) || (rMaj === lMaj && rMin === lMin && rPatch > lPatch)) {
-                this._updateAvailable = true;
-                this.requestUpdate();
-            }
         } catch (e) {
             // silently ignore
         }
@@ -760,14 +707,7 @@ export class CheatingDaddyApp extends LitElement {
                     `)}
                 </nav>
                 <div class="sidebar-footer">
-                    ${this._updateAvailable ? html`
-                        <button class="update-btn" @click=${() => this.handleExternalLinkClick('https://cheatingdaddy.com/download')}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 11l5 5l5-5m-5-7v12" /></svg>
-                            Update available
-                        </button>
-                    ` : html`
-                        <div class="version-text">v${this._localVersion}</div>
-                    `}
+                    <div class="version-text">v${this._localVersion}</div>
                 </div>
             </div>
         `;

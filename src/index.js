@@ -14,10 +14,11 @@ const storage = require('./storage');
 function getEmbedConfigFromStorage() {
     const creds = storage.getCredentials();
     const prefs = storage.getPreferences();
-    if (!creds.customSttApiKey) return null;
+    const apiKey = creds.embeddingApiKey || creds.customSttApiKey;
+    if (!apiKey) return null;
     return {
         baseUrl: (prefs.embeddingBaseUrl || 'https://api.siliconflow.cn/v1').replace(/\/+$/, ''),
-        apiKey: creds.customSttApiKey,
+        apiKey,
         model: prefs.embeddingModel || 'BAAI/bge-m3',
     };
 }

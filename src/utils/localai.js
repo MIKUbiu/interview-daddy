@@ -25,12 +25,36 @@ const VAD_MODES = {
     NORMAL: { energyThreshold: 0.01, speechFramesRequired: 3, silenceFramesRequired: 30 },
     LOW_BITRATE: { energyThreshold: 0.008, speechFramesRequired: 4, silenceFramesRequired: 35 },
     AGGRESSIVE: { energyThreshold: 0.015, speechFramesRequired: 2, silenceFramesRequired: 20 },
-    VERY_AGGRESSIVE: { energyThreshold: 0.02, speechFramesRequired: 2, silenceFramesRequired: 15 },
+    VERY_AGGRESSIVE: { energyThreshold: 0.02, speechFramesRequired: 2, silenceFramesRequired: 13 },
 };
 let vadConfig = VAD_MODES.VERY_AGGRESSIVE;
 
 // Audio resampling buffer
 let resampleRemainder = Buffer.alloc(0);
+
+// ── Network helper ──
+
+// fetch() throws (rather than returning a bad status) when the request never
+// makes it to a server at all — DNS failure, connection refused, TLS reset,
+// a dropped WiFi/VPN link mid-handshake, etc. Those are usually transient, so
+// retry a couple of times with a short backoff before giving up. HTTP error
+// *responses* (401, 400, 500...) are not retried here — retrying a bad key or
+// a malformed request just fails the same way again.
+async function fetchWithRetry(url, options, { retries = 2, delayMs = 600 } = {}) {
+    let lastError;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            return await fetch(url, options);
+        } catch (error) {
+            lastError = error;
+            if (attempt < retries) {
+                console.log(`[LocalAI] Network error (${error.message}), retrying ${attempt + 1}/${retries}...`);
+                await new Promise(r => setTimeout(r, delayMs));
+            }
+        }
+    }
+    throw new Error(`Network unreachable after ${retries + 1} attempts (${lastError.message}). Check your internet connection.`);
+}
 
 // ── Audio Resampling (24kHz → 16kHz) ──
 
@@ -145,7 +169,7 @@ async function transcribeAudio(pcm16kBuffer) {
             form.append('language', customSttConfig.language);
         }
 
-        const res = await fetch(`${customSttConfig.baseUrl}/audio/transcriptions`, {
+        const res = await fetchWithRetry(`${customSttConfig.baseUrl}/audio/transcriptions`, {
             method: 'POST',
             headers: { Authorization: `Bearer ${customSttConfig.apiKey}` },
             body: form,
@@ -197,10 +221,11 @@ function getEmbedConfig() {
     try {
         const prefs = storage.getPreferences();
         const creds = storage.getCredentials();
-        if (!creds.customSttApiKey) return null;
+        const apiKey = creds.embeddingApiKey || creds.customSttApiKey;
+        if (!apiKey) return null;
         return {
             baseUrl: (prefs.embeddingBaseUrl || 'https://api.siliconflow.cn/v1').replace(/\/+$/, ''),
-            apiKey: creds.customSttApiKey,
+            apiKey,
             model: prefs.embeddingModel || 'BAAI/bge-m3',
         };
     } catch {
@@ -250,7 +275,7 @@ async function buildMessagesWithRetrieval(query) {
 // ── Custom OpenAI-compatible Chat ──
 
 async function streamCustomChat(messages) {
-    const res = await fetch(`${customLlmConfig.baseUrl}/chat/completions`, {
+    const res = await fetchWithRetry(`${customLlmConfig.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

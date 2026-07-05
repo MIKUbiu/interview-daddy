@@ -13,7 +13,8 @@ const DEFAULT_CONFIG = {
 
 const DEFAULT_CREDENTIALS = {
     customApiKey: '',
-    customSttApiKey: ''
+    customSttApiKey: '',
+    embeddingApiKey: ''
 };
 
 const DEFAULT_PREFERENCES = {

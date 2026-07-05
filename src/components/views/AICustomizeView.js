@@ -128,6 +128,9 @@ export class AICustomizeView extends LitElement {
         _docEmbedProgress: { state: true },
         _docError: { state: true },
         _docSearchEnabled: { state: true },
+        _embeddingModel: { state: true },
+        _embeddingBaseUrl: { state: true },
+        _embeddingApiKey: { state: true },
     };
 
     constructor() {
@@ -147,6 +150,9 @@ export class AICustomizeView extends LitElement {
         this._docEmbedProgress = null;
         this._docError = '';
         this._docSearchEnabled = true;
+        this._embeddingModel = 'BAAI/bge-m3';
+        this._embeddingBaseUrl = 'https://api.siliconflow.cn/v1';
+        this._embeddingApiKey = '';
         this._loadFromStorage();
     }
 
@@ -182,11 +188,15 @@ export class AICustomizeView extends LitElement {
     async _loadFromStorage() {
         try {
             const prefs = await cheatingDaddy.storage.getPreferences();
+            const creds = await cheatingDaddy.storage.getCredentials().catch(() => ({}));
             this._context = prefs.customPrompt || '';
             this._projectPath = prefs.projectPath || '';
             this._codeSearchEnabled = prefs.codeSearchEnabled !== false;
             this._docFiles = prefs.docFilePaths || [];
             this._docSearchEnabled = prefs.docSearchEnabled !== false;
+            this._embeddingModel = prefs.embeddingModel || 'BAAI/bge-m3';
+            this._embeddingBaseUrl = prefs.embeddingBaseUrl || 'https://api.siliconflow.cn/v1';
+            this._embeddingApiKey = creds.embeddingApiKey || '';
             // Reconstruct a light status line from stored context length if a project is loaded
             if (prefs.projectContext) {
                 this._projectStats = { chars: prefs.projectContext.length };
@@ -242,6 +252,27 @@ export class AICustomizeView extends LitElement {
         this._projectPath = '';
         this._projectStats = null;
         this._projectError = '';
+        this.requestUpdate();
+    }
+
+    async _saveEmbeddingModel(val) {
+        this._embeddingModel = val;
+        await cheatingDaddy.storage.updatePreference('embeddingModel', val);
+        this.requestUpdate();
+    }
+
+    async _saveEmbeddingBaseUrl(val) {
+        this._embeddingBaseUrl = val;
+        await cheatingDaddy.storage.updatePreference('embeddingBaseUrl', val);
+        this.requestUpdate();
+    }
+
+    async _saveEmbeddingApiKey(val) {
+        this._embeddingApiKey = val;
+        try {
+            const creds = await cheatingDaddy.storage.getCredentials().catch(() => ({}));
+            await cheatingDaddy.storage.setCredentials({ ...creds, embeddingApiKey: val });
+        } catch (e) {}
         this.requestUpdate();
     }
 
@@ -422,6 +453,38 @@ export class AICustomizeView extends LitElement {
                                 <select class="control" .value=${this.selectedProfile} @change=${this._handleProfileChange}>
                                     ${profiles.map(profile => html`<option value=${profile.value}>${profile.label}</option>`)}
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Embedding Model</label>
+                                <input
+                                    class="control"
+                                    type="text"
+                                    placeholder="BAAI/bge-m3"
+                                    .value=${this._embeddingModel}
+                                    @input=${e => this._saveEmbeddingModel(e.target.value)}
+                                />
+                                <div class="form-help">Used to power semantic search over your project code and documents (below). Falls back to keyword-only search if unset or unreachable.</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Embedding Base URL</label>
+                                <input
+                                    class="control"
+                                    type="text"
+                                    placeholder="https://api.siliconflow.cn/v1"
+                                    .value=${this._embeddingBaseUrl}
+                                    @input=${e => this._saveEmbeddingBaseUrl(e.target.value)}
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Embedding API Key</label>
+                                <input
+                                    class="control"
+                                    type="password"
+                                    placeholder="Optional — falls back to your STT API key if left blank"
+                                    .value=${this._embeddingApiKey}
+                                    @input=${e => this._saveEmbeddingApiKey(e.target.value)}
+                                />
+                                <div class="form-help">Only needed if embeddings use a different provider/account than STT (set on Home).</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Project Context</label>
