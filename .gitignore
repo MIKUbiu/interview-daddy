@@ -93,3 +93,6 @@ typings/
 out/
 .specstory
 .specstory/
+
+# Internal AI-agent notes (stale, not meant for the public repo)
+AGENTS.md
