@@ -42,20 +42,6 @@ const storage = {
     async setCredentials(credentials) {
         return ipcRenderer.invoke('storage:set-credentials', credentials);
     },
-    async getApiKey() {
-        const result = await ipcRenderer.invoke('storage:get-api-key');
-        return result.success ? result.data : '';
-    },
-    async setApiKey(apiKey) {
-        return ipcRenderer.invoke('storage:set-api-key', apiKey);
-    },
-    async getGroqApiKey() {
-        const result = await ipcRenderer.invoke('storage:get-groq-api-key');
-        return result.success ? result.data : '';
-    },
-    async setGroqApiKey(groqApiKey) {
-        return ipcRenderer.invoke('storage:set-groq-api-key', groqApiKey);
-    },
 
     // Preferences
     async getPreferences() {
@@ -67,15 +53,6 @@ const storage = {
     },
     async updatePreference(key, value) {
         return ipcRenderer.invoke('storage:update-preference', key, value);
-    },
-
-    // Keybinds
-    async getKeybinds() {
-        const result = await ipcRenderer.invoke('storage:get-keybinds');
-        return result.success ? result.data : null;
-    },
-    async setKeybinds(keybinds) {
-        return ipcRenderer.invoke('storage:set-keybinds', keybinds);
     },
 
     // Sessions (History)
@@ -101,12 +78,6 @@ const storage = {
     async clearAll() {
         return ipcRenderer.invoke('storage:clear-all');
     },
-
-    // Limits
-    async getTodayLimits() {
-        const result = await ipcRenderer.invoke('storage:get-today-limits');
-        return result.success ? result.data : { flash: { count: 0 }, flashLite: { count: 0 } };
-    }
 };
 
 // Cache for preferences to avoid async calls in hot paths
@@ -140,29 +111,32 @@ function arrayBufferToBase64(buffer) {
     return btoa(binary);
 }
 
-async function initializeGemini(profile = 'interview', language = 'en-US') {
-    const apiKey = await storage.getApiKey();
-    if (apiKey) {
-        const prefs = await storage.getPreferences();
-        const success = await ipcRenderer.invoke('initialize-gemini', apiKey, prefs.customPrompt || '', profile, language);
-        if (success) {
-            cheatingDaddy.setStatus('Live');
-        } else {
-            cheatingDaddy.setStatus('error');
-        }
-    }
+// Merge the user's custom instructions with any loaded project context.
+// Project context goes first so the model treats it as primary grounding.
+function buildEffectivePrompt(prefs) {
+    const custom = (prefs.customPrompt || '').trim();
+    const project = (prefs.projectContext || '').trim();
+    if (project && custom) return `${project}\n\n---\n\n${custom}`;
+    return project || custom;
 }
 
-async function initializeLocal(profile = 'interview') {
+async function initializeCustom(profile = 'interview') {
     const prefs = await storage.getPreferences();
-    const ollamaHost = prefs.ollamaHost || 'http://127.0.0.1:11434';
-    const ollamaModel = prefs.ollamaModel || 'llama3.1';
-    const whisperModel = prefs.whisperModel || 'Xenova/whisper-small';
-    const customPrompt = prefs.customPrompt || '';
+    const creds = await storage.getCredentials().catch(() => ({}));
 
-    const success = await ipcRenderer.invoke('initialize-local', ollamaHost, ollamaModel, whisperModel, profile, customPrompt);
+    const config = {
+        baseUrl: prefs.customBaseUrl || 'https://taotoken.net/api/v1',
+        apiKey: creds.customApiKey || '',
+        model: prefs.customModel || 'deepseek-v3.2',
+        sttBaseUrl: prefs.customSttBaseUrl || 'https://api.siliconflow.cn/v1',
+        sttApiKey: creds.customSttApiKey || '',
+        sttModel: prefs.customSttModel || 'FunAudioLLM/SenseVoiceSmall',
+        sttLanguage: prefs.selectedLanguage || 'zh',
+    };
+
+    const success = await ipcRenderer.invoke('initialize-custom', config, profile, buildEffectivePrompt(prefs));
     if (success) {
-        cheatingDaddy.setStatus('Local AI Live');
+        cheatingDaddy.setStatus('Live');
         return true;
     } else {
         cheatingDaddy.setStatus('error');
@@ -764,24 +738,6 @@ ipcRenderer.on('save-screen-analysis', async (event, data) => {
 });
 
 // Listen for emergency erase command from main process
-ipcRenderer.on('clear-sensitive-data', async () => {
-    console.log('Clearing all data...');
-    await storage.clearAll();
-});
-
-// Handle shortcuts based on current view
-function handleShortcut(shortcutKey) {
-    const currentView = cheatingDaddy.getCurrentView();
-
-    if (shortcutKey === 'ctrl+enter' || shortcutKey === 'cmd+enter') {
-        if (currentView === 'main') {
-            cheatingDaddy.element().handleStart();
-        } else {
-            captureManualScreenshot();
-        }
-    }
-}
-
 // Create reference to the main app element
 const cheatingDaddyApp = document.querySelector('cheating-daddy-app');
 
@@ -1026,13 +982,11 @@ const cheatingDaddy = {
     updateCurrentResponse: response => cheatingDaddyApp.updateCurrentResponse(response),
 
     // Core functionality
-    initializeGemini,
     initializeCloud,
-    initializeLocal,
+    initializeCustom,
     startCapture,
     stopCapture,
     sendTextMessage,
-    handleShortcut,
 
     // Storage API
     storage,

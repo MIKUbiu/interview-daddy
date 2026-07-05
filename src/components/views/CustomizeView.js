@@ -111,30 +111,6 @@ export class CustomizeView extends LitElement {
                 border: none;
             }
 
-            .keybind-row {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: var(--space-sm) 0;
-                border-bottom: 1px solid var(--border);
-            }
-
-            .keybind-row:last-of-type {
-                border-bottom: none;
-            }
-
-            .keybind-name {
-                color: var(--text-secondary);
-                font-size: var(--font-size-sm);
-            }
-
-            .keybind-input {
-                width: 140px;
-                text-align: center;
-                font-family: var(--font-mono);
-                font-size: var(--font-size-xs);
-            }
-
             .danger-button {
                 border: 1px solid var(--danger);
                 color: var(--danger);
@@ -180,7 +156,6 @@ export class CustomizeView extends LitElement {
         selectedLanguage: { type: String },
         selectedImageQuality: { type: String },
         layoutMode: { type: String },
-        keybinds: { type: Object },
         googleSearchEnabled: { type: Boolean },
         backgroundTransparency: { type: Number },
         fontSize: { type: Number },
@@ -198,10 +173,9 @@ export class CustomizeView extends LitElement {
     constructor() {
         super();
         this.selectedProfile = 'interview';
-        this.selectedLanguage = 'en-US';
+        this.selectedLanguage = 'zh';
         this.selectedImageQuality = 'medium';
         this.layoutMode = 'normal';
-        this.keybinds = this.getDefaultKeybinds();
         this.onProfileChange = () => {};
         this.onLanguageChange = () => {};
         this.onImageQualityChange = () => {};
@@ -225,16 +199,13 @@ export class CustomizeView extends LitElement {
 
     async _loadFromStorage() {
         try {
-            const [prefs, keybinds] = await Promise.all([cheatingDaddy.storage.getPreferences(), cheatingDaddy.storage.getKeybinds()]);
+            const prefs = await cheatingDaddy.storage.getPreferences();
             this.googleSearchEnabled = prefs.googleSearchEnabled ?? true;
             this.backgroundTransparency = prefs.backgroundTransparency ?? 0.8;
             this.fontSize = prefs.fontSize ?? 20;
             this.audioMode = prefs.audioMode ?? 'speaker_only';
             this.customPrompt = prefs.customPrompt ?? '';
             this.theme = prefs.theme ?? 'dark';
-            if (keybinds) {
-                this.keybinds = { ...this.getDefaultKeybinds(), ...keybinds };
-            }
             this.updateBackgroundAppearance();
             this.updateFontSize();
             this.requestUpdate();
@@ -255,79 +226,17 @@ export class CustomizeView extends LitElement {
     }
 
     getLanguages() {
+        // Passed as a hint to the speech-to-text model (SenseVoice by default),
+        // which measurably improves transcription accuracy on ambiguous audio.
+        // Kept to the languages SenseVoice actually supports, plus auto-detect.
         return [
-            { value: 'en-US', name: 'English (US)' },
-            { value: 'en-GB', name: 'English (UK)' },
-            { value: 'en-AU', name: 'English (Australia)' },
-            { value: 'en-IN', name: 'English (India)' },
-            { value: 'de-DE', name: 'German (Germany)' },
-            { value: 'es-US', name: 'Spanish (US)' },
-            { value: 'es-ES', name: 'Spanish (Spain)' },
-            { value: 'fr-FR', name: 'French (France)' },
-            { value: 'fr-CA', name: 'French (Canada)' },
-            { value: 'hi-IN', name: 'Hindi (India)' },
-            { value: 'pt-BR', name: 'Portuguese (Brazil)' },
-            { value: 'ar-XA', name: 'Arabic (Generic)' },
-            { value: 'id-ID', name: 'Indonesian (Indonesia)' },
-            { value: 'it-IT', name: 'Italian (Italy)' },
-            { value: 'ja-JP', name: 'Japanese (Japan)' },
-            { value: 'tr-TR', name: 'Turkish (Turkey)' },
-            { value: 'vi-VN', name: 'Vietnamese (Vietnam)' },
-            { value: 'bn-IN', name: 'Bengali (India)' },
-            { value: 'gu-IN', name: 'Gujarati (India)' },
-            { value: 'kn-IN', name: 'Kannada (India)' },
-            { value: 'ml-IN', name: 'Malayalam (India)' },
-            { value: 'mr-IN', name: 'Marathi (India)' },
-            { value: 'ta-IN', name: 'Tamil (India)' },
-            { value: 'te-IN', name: 'Telugu (India)' },
-            { value: 'nl-NL', name: 'Dutch (Netherlands)' },
-            { value: 'ko-KR', name: 'Korean (South Korea)' },
-            { value: 'cmn-CN', name: 'Mandarin Chinese (China)' },
-            { value: 'pl-PL', name: 'Polish (Poland)' },
-            { value: 'ru-RU', name: 'Russian (Russia)' },
-            { value: 'th-TH', name: 'Thai (Thailand)' },
+            { value: 'auto', name: '自动检测 (Auto-detect)' },
+            { value: 'zh', name: '简体中文 (Chinese)' },
+            { value: 'yue', name: '粤语 (Cantonese)' },
+            { value: 'en', name: 'English' },
+            { value: 'ja', name: '日本語 (Japanese)' },
+            { value: 'ko', name: '한국어 (Korean)' },
         ];
-    }
-
-    getDefaultKeybinds() {
-        const isMac = cheatingDaddy.isMacOS || navigator.platform.includes('Mac');
-        return {
-            moveUp: isMac ? 'Alt+Up' : 'Ctrl+Up',
-            moveDown: isMac ? 'Alt+Down' : 'Ctrl+Down',
-            moveLeft: isMac ? 'Alt+Left' : 'Ctrl+Left',
-            moveRight: isMac ? 'Alt+Right' : 'Ctrl+Right',
-            toggleVisibility: isMac ? 'Cmd+\\' : 'Ctrl+\\',
-            toggleClickThrough: isMac ? 'Cmd+M' : 'Ctrl+M',
-            nextStep: isMac ? 'Cmd+Enter' : 'Ctrl+Enter',
-            previousResponse: isMac ? 'Cmd+[' : 'Ctrl+[',
-            nextResponse: isMac ? 'Cmd+]' : 'Ctrl+]',
-            scrollUp: isMac ? 'Cmd+Shift+Up' : 'Ctrl+Shift+Up',
-            scrollDown: isMac ? 'Cmd+Shift+Down' : 'Ctrl+Shift+Down',
-        };
-    }
-
-    getKeybindActions() {
-        return [
-            { key: 'moveUp', name: 'Move Window Up', description: 'Move the app window up' },
-            { key: 'moveDown', name: 'Move Window Down', description: 'Move the app window down' },
-            { key: 'moveLeft', name: 'Move Window Left', description: 'Move the app window left' },
-            { key: 'moveRight', name: 'Move Window Right', description: 'Move the app window right' },
-            { key: 'toggleVisibility', name: 'Toggle Visibility', description: 'Show or hide the app window' },
-            { key: 'toggleClickThrough', name: 'Toggle Click-through', description: 'Enable or disable click-through mode' },
-            { key: 'nextStep', name: 'Ask Next Step', description: 'Take screenshot and ask for next step' },
-            { key: 'previousResponse', name: 'Previous Response', description: 'Move to previous AI response' },
-            { key: 'nextResponse', name: 'Next Response', description: 'Move to next AI response' },
-            { key: 'scrollUp', name: 'Scroll Response Up', description: 'Scroll response content upward' },
-            { key: 'scrollDown', name: 'Scroll Response Down', description: 'Scroll response content downward' },
-        ];
-    }
-
-    async saveKeybinds() {
-        await cheatingDaddy.storage.setKeybinds(this.keybinds);
-        if (window.require) {
-            const { ipcRenderer } = window.require('electron');
-            ipcRenderer.send('update-keybinds', this.keybinds);
-        }
     }
 
     handleProfileSelect(e) {
@@ -405,72 +314,6 @@ export class CustomizeView extends LitElement {
         document.documentElement.style.setProperty('--response-font-size', `${this.fontSize}px`);
     }
 
-    handleKeybindChange(action, value) {
-        this.keybinds = { ...this.keybinds, [action]: value };
-        this.saveKeybinds();
-        this.requestUpdate();
-    }
-
-    handleKeybindFocus(e) {
-        e.target.placeholder = 'Press key combination...';
-        e.target.select();
-    }
-
-    handleKeybindInput(e) {
-        e.preventDefault();
-        const modifiers = [];
-        if (e.ctrlKey) modifiers.push('Ctrl');
-        if (e.metaKey) modifiers.push('Cmd');
-        if (e.altKey) modifiers.push('Alt');
-        if (e.shiftKey) modifiers.push('Shift');
-        let mainKey = e.key;
-
-        switch (e.code) {
-            case 'ArrowUp':
-                mainKey = 'Up';
-                break;
-            case 'ArrowDown':
-                mainKey = 'Down';
-                break;
-            case 'ArrowLeft':
-                mainKey = 'Left';
-                break;
-            case 'ArrowRight':
-                mainKey = 'Right';
-                break;
-            case 'Enter':
-                mainKey = 'Enter';
-                break;
-            case 'Space':
-                mainKey = 'Space';
-                break;
-            case 'Backslash':
-                mainKey = '\\';
-                break;
-            default:
-                if (e.key.length === 1) mainKey = e.key.toUpperCase();
-                break;
-        }
-
-        if (['Control', 'Meta', 'Alt', 'Shift'].includes(e.key)) return;
-
-        const action = e.target.dataset.action;
-        const keybind = [...modifiers, mainKey].join('+');
-        this.handleKeybindChange(action, keybind);
-        e.target.value = keybind;
-        e.target.blur();
-    }
-
-    async resetKeybinds() {
-        this.keybinds = this.getDefaultKeybinds();
-        await cheatingDaddy.storage.setKeybinds(null);
-        if (window.require) {
-            const { ipcRenderer } = window.require('electron');
-            ipcRenderer.send('update-keybinds', this.keybinds);
-        }
-        this.requestUpdate();
-    }
-
     async restoreAllSettings() {
         if (this.isRestoring) return;
         this.isRestoring = true;
@@ -482,7 +325,7 @@ export class CustomizeView extends LitElement {
             const defaults = {
                 customPrompt: '',
                 selectedProfile: 'interview',
-                selectedLanguage: 'en-US',
+                selectedLanguage: 'zh',
                 selectedScreenshotInterval: '5',
                 selectedImageQuality: 'medium',
                 audioMode: 'speaker_only',
@@ -493,14 +336,6 @@ export class CustomizeView extends LitElement {
             };
             for (const [key, value] of Object.entries(defaults)) {
                 await cheatingDaddy.storage.updatePreference(key, value);
-            }
-
-            // Restore keybinds
-            this.keybinds = this.getDefaultKeybinds();
-            await cheatingDaddy.storage.setKeybinds(null);
-            if (window.require) {
-                const { ipcRenderer } = window.require('electron');
-                ipcRenderer.send('update-keybinds', this.keybinds);
             }
 
             // Apply to local state
@@ -658,31 +493,6 @@ export class CustomizeView extends LitElement {
         `;
     }
 
-    renderKeyboardSection() {
-        return html`
-            <section class="surface">
-                <div class="surface-title">Keyboard Shortcuts</div>
-                ${this.getKeybindActions().map(action => html`
-                    <div class="keybind-row">
-                        <span class="keybind-name">${action.name}</span>
-                        <input
-                            type="text"
-                            class="control keybind-input"
-                            .value=${this.keybinds[action.key]}
-                            data-action=${action.key}
-                            @keydown=${this.handleKeybindInput}
-                            @focus=${this.handleKeybindFocus}
-                            readonly
-                        />
-                    </div>
-                `)}
-                <div style="margin-top: var(--space-sm);">
-                    <button class="control" style="width:auto;padding:8px 10px;" @click=${this.resetKeybinds}>Reset to defaults</button>
-                </div>
-            </section>
-        `;
-    }
-
     renderPrivacySection() {
         return html`
             <section class="surface danger-surface">
@@ -710,7 +520,6 @@ export class CustomizeView extends LitElement {
                     ${this.renderAudioSection()}
                     ${this.renderLanguageSection()}
                     ${this.renderAppearanceSection()}
-                    ${this.renderKeyboardSection()}
                     ${this.renderPrivacySection()}
                 </div>
             </div>

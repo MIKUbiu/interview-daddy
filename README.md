@@ -1,60 +1,63 @@
-<img width="1299" height="424" alt="cd (1)" src="https://github.com/user-attachments/assets/b25fff4d-043d-4f38-9985-f832ae0d0f6e" />
+# interview-daddy
 
-## Recall.ai - API for desktop recording
+A real-time AI assistant for interviews, sales calls, and meetings — screen + audio in, contextual answers out. This is a heavily modified fork of [sohzm/cheating-daddy](https://github.com/sohzm/cheating-daddy), stripped down to a single, simpler provider model and extended with project/document-aware answers.
 
-If you’re looking for a hosted desktop recording API, consider checking out [Recall.ai](https://www.recall.ai/product/desktop-recording-sdk/?utm_source=github&utm_medium=sponsorship&utm_campaign=sohzm-cheating-daddy), an API that records Zoom, Google Meet, Microsoft Teams, in-person meetings, and more.
+## Based on
 
-This project is sponsored by Recall.ai.
+This project is a derivative work of [sohzm/cheating-daddy](https://github.com/sohzm/cheating-daddy), licensed under **GPL-3.0**. Per the license, this fork is also distributed under GPL-3.0 (see [LICENSE](LICENSE)). All credit for the original architecture, UI shell, and audio-capture pipeline goes to the upstream author.
 
----
+### What's different from upstream
 
-> [!NOTE]  
-> Use latest MacOS and Windows version, older versions have limited support
+- **One provider model, not three.** The original supported BYOK (Gemini Live), a hosted Cloud mode, and Local (Ollama + Whisper). This fork removes BYOK and Local entirely and keeps only **Custom API** — point it at any OpenAI-compatible chat endpoint and any OpenAI-compatible `/audio/transcriptions` endpoint (SiliconFlow, DeepSeek, Moonshot, self-hosted, etc).
+- **Project & document retrieval (RAG).** Load a project folder or personal documents (`.md`, `.txt`, `.docx`, `.pdf`) and the assistant retrieves relevant code/notes per question (hybrid keyword + vector search) instead of answering from the system prompt alone.
+- **Working speech-language hint.** The language selector now actually biases the transcription model instead of being a vestigial, unused setting.
+- **System tray.** Closing the window minimizes to tray instead of quitting; a real quit is one tray-menu click away.
+- **Removed:** the BYOK/Local settings UI, Feedback and Help pages, the global keyboard-shortcut system (window movement, click-through, screenshot/start-session hotkey, response navigation hotkeys, emergency-erase hotkey), and the Gemini/Groq daily-usage rate-limit tracker that only made sense for the old free-tier BYOK flow.
 
-> [!NOTE]  
-> During testing it wont answer if you ask something, you need to simulate interviewer asking question, which it will answer
+None of this is meant to replace the upstream project — if you want the original multi-provider feature set, use [sohzm/cheating-daddy](https://github.com/sohzm/cheating-daddy) directly.
 
-A real-time AI assistant that provides contextual help during video calls, interviews, presentations, and meetings using screen capture and audio analysis.
+## Quick Start
 
-## Features
+```bash
+git clone <this-repo-url>
+cd interview-daddy
+npm install
+npm start
+```
 
-- **Live AI Assistance**: Real-time help powered by Google Gemini 2.0 Flash Live
-- **Screen & Audio Capture**: Analyzes what you see and hear for contextual responses
-- **Multiple Profiles**: Interview, Sales Call, Business Meeting, Presentation, Negotiation
-- **Transparent Overlay**: Always-on-top window that can be positioned anywhere
-- **Click-through Mode**: Make window transparent to clicks when needed
-- **Cross-platform**: Works on macOS, Windows, and Linux (kinda, dont use, just for testing rn)
+On first launch, go to the **Home** screen and fill in:
 
-## Setup
+| Field | Example |
+|---|---|
+| API Base URL | `https://api.siliconflow.cn/v1` (any OpenAI-compatible endpoint) |
+| API Key | your provider's key |
+| Chat Model | `deepseek-v3.2` |
+| STT Model | `FunAudioLLM/SenseVoiceSmall` |
+| STT Base URL | same as API Base URL, or a different provider |
+| STT API Key | same as API Key, or a different provider's key |
 
-1. **Get a Gemini API Key**: Visit [Google AI Studio](https://aistudio.google.com/apikey)
-2. **Install Dependencies**: `npm install`
-3. **Run the App**: `npm start`
+Then click **Start Session**. During a live session:
+- The app listens to system audio (or mic, depending on Settings → Audio Mode) and answers automatically after each detected question.
+- You can also type a message or click the screenshot button to ask about what's on screen.
 
-## Usage
+> [!NOTE]
+> During testing it won't answer if you just talk to yourself — simulate an interviewer actually asking a question through system audio.
 
-1. Enter your Gemini API key in the main window
-2. Choose your profile and language in settings
-3. Click "Start Session" to begin
-4. Position the window using keyboard shortcuts
-5. The AI will provide real-time assistance based on your screen and what interview asks
+## Optional: project & document context
 
-## Keyboard Shortcuts
+Under **AI Context**:
+- **Project Context** — pick a folder; it scans the README, dependency manifest, structure, and entry files for a project summary, and builds a searchable code index for implementation-detail questions.
+- **Personal Documents** — add your resume, prep notes, etc. (`.md`/`.txt`/`.docx`/`.pdf`); relevant snippets are pulled in per question alongside code search.
 
-- **Window Movement**: `Ctrl/Cmd + Arrow Keys` - Move window
-- **Click-through**: `Ctrl/Cmd + M` - Toggle mouse events
-- **Close/Back**: `Ctrl/Cmd + \` - Close window or go back
-- **Send Message**: `Enter` - Send text to AI
-
-## Audio Capture
-
-- **macOS**: [SystemAudioDump](https://github.com/Mohammed-Yasin-Mulla/Sound) for system audio
-- **Windows**: Loopback audio capture
-- **Linux**: Microphone input
+Both use the same API key as your Chat/STT config for embeddings (`BAAI/bge-m3` by default via SiliconFlow) — if no embedding key is configured, retrieval falls back to keyword-only search automatically.
 
 ## Requirements
 
-- Electron-compatible OS (macOS, Windows, Linux)
-- Gemini API key
-- Screen recording permissions
-- Microphone/audio permissions
+- Node.js + npm
+- Electron-compatible OS (developed/tested on Windows; macOS/Linux inherited from upstream but not verified in this fork)
+- Screen recording + microphone/audio permissions
+- An OpenAI-compatible chat API key and an OpenAI-compatible speech-to-text API key
+
+## License
+
+GPL-3.0, inherited from and required by the upstream project. See [LICENSE](LICENSE).

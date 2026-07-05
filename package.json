@@ -1,8 +1,8 @@
 {
-    "name": "cheating-daddy",
-    "productName": "cheating-daddy",
-    "version": "0.7.0",
-    "description": "cheating daddy",
+    "name": "interview-daddy",
+    "productName": "interview-daddy",
+    "version": "0.1.0",
+    "description": "Custom-API-only fork of cheating-daddy with project/document RAG retrieval",
     "main": "src/index.js",
     "scripts": {
         "start": "electron-forge start",
@@ -12,11 +12,10 @@
         "lint": "echo \"No linting configured\""
     },
     "keywords": [
-        "cheating daddy",
-        "cheating daddy ai",
-        "cheating daddy ai assistant",
-        "cheating daddy ai assistant for interviews",
-        "cheating daddy ai assistant for interviews"
+        "interview assistant",
+        "ai interview copilot",
+        "openai-compatible",
+        "rag"
     ],
     "author": {
         "name": "sohzm",
@@ -24,10 +23,9 @@
     },
     "license": "GPL-3.0",
     "dependencies": {
-        "@google/genai": "^1.2.0",
-        "@huggingface/transformers": "^3.8.1",
         "electron-squirrel-startup": "^1.0.1",
-        "ollama": "^0.6.3",
+        "mammoth": "^1.12.0",
+        "pdfjs-dist": "^6.1.200",
         "ws": "^8.19.0"
     },
     "devDependencies": {

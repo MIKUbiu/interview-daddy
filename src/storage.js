@@ -12,31 +12,31 @@ const DEFAULT_CONFIG = {
 };
 
 const DEFAULT_CREDENTIALS = {
-    apiKey: '',
-    groqApiKey: ''
+    customApiKey: '',
+    customSttApiKey: ''
 };
 
 const DEFAULT_PREFERENCES = {
     customPrompt: '',
-    providerMode: 'byok',
     selectedProfile: 'interview',
-    selectedLanguage: 'en-US',
+    selectedLanguage: 'zh',
     selectedScreenshotInterval: '5',
     selectedImageQuality: 'medium',
     advancedMode: false,
     audioMode: 'speaker_only',
     fontSize: 'medium',
     backgroundTransparency: 0.8,
-    googleSearchEnabled: false,
-    ollamaHost: 'http://127.0.0.1:11434',
-    ollamaModel: 'llama3.1',
-    whisperModel: 'Xenova/whisper-small',
-};
-
-const DEFAULT_KEYBINDS = null; // null means use system defaults
-
-const DEFAULT_LIMITS = {
-    data: [] // Array of { date: 'YYYY-MM-DD', flash: { count }, flashLite: { count }, groq: { 'qwen3-32b': { chars, limit }, 'gpt-oss-120b': { chars, limit }, 'gpt-oss-20b': { chars, limit } }, gemini: { 'gemma-4-26b-a4b-it': { chars } } }
+    customBaseUrl: 'https://taotoken.net/api/v1',
+    customModel: 'deepseek-v3.2',
+    customSttBaseUrl: 'https://api.siliconflow.cn/v1',
+    customSttModel: 'FunAudioLLM/SenseVoiceSmall',
+    projectContext: '',
+    projectPath: '',
+    codeSearchEnabled: true,
+    embeddingBaseUrl: 'https://api.siliconflow.cn/v1',
+    embeddingModel: 'BAAI/bge-m3',
+    docFilePaths: [],
+    docSearchEnabled: true,
 };
 
 // Get the config directory path based on OS
@@ -66,14 +66,6 @@ function getCredentialsPath() {
 
 function getPreferencesPath() {
     return path.join(getConfigDir(), 'preferences.json');
-}
-
-function getKeybindsPath() {
-    return path.join(getConfigDir(), 'keybinds.json');
-}
-
-function getLimitsPath() {
-    return path.join(getConfigDir(), 'limits.json');
 }
 
 function getHistoryDir() {
@@ -189,22 +181,6 @@ function setCredentials(credentials) {
     return writeJsonFile(getCredentialsPath(), updated);
 }
 
-function getApiKey() {
-    return getCredentials().apiKey || '';
-}
-
-function setApiKey(apiKey) {
-    return setCredentials({ apiKey });
-}
-
-function getGroqApiKey() {
-    return getCredentials().groqApiKey || '';
-}
-
-function setGroqApiKey(groqApiKey) {
-    return setCredentials({ groqApiKey });
-}
-
 // ============ PREFERENCES ============
 
 function getPreferences() {
@@ -222,161 +198,6 @@ function updatePreference(key, value) {
     const preferences = getPreferences();
     preferences[key] = value;
     return writeJsonFile(getPreferencesPath(), preferences);
-}
-
-// ============ KEYBINDS ============
-
-function getKeybinds() {
-    return readJsonFile(getKeybindsPath(), DEFAULT_KEYBINDS);
-}
-
-function setKeybinds(keybinds) {
-    return writeJsonFile(getKeybindsPath(), keybinds);
-}
-
-// ============ LIMITS (Rate Limiting) ============
-
-function getLimits() {
-    return readJsonFile(getLimitsPath(), DEFAULT_LIMITS);
-}
-
-function setLimits(limits) {
-    return writeJsonFile(getLimitsPath(), limits);
-}
-
-function getTodayDateString() {
-    const now = new Date();
-    return now.toISOString().split('T')[0]; // YYYY-MM-DD
-}
-
-function getTodayLimits() {
-    const limits = getLimits();
-    const today = getTodayDateString();
-
-    // Find today's entry
-    const todayEntry = limits.data.find(entry => entry.date === today);
-
-    if (todayEntry) {
-        // ensure new fields exist
-        if(!todayEntry.groq) {
-            todayEntry.groq = {
-                'qwen3-32b': { chars: 0, limit: 1500000 },
-                'gpt-oss-120b': { chars: 0, limit: 600000 },
-                'gpt-oss-20b': { chars: 0, limit: 600000 },
-                'kimi-k2-instruct': { chars: 0, limit: 600000 }
-            };
-        }
-        if(!todayEntry.gemini) {
-            todayEntry.gemini = {
-                'gemma-4-26b-a4b-it': { chars: 0 }
-            };
-        }
-        setLimits(limits);
-        return todayEntry;
-    }
-
-    // No entry for today - clean old entries and create new one
-    limits.data = limits.data.filter(entry => entry.date === today);
-    const newEntry = {
-        date: today,
-        flash: { count: 0 },
-        flashLite: { count: 0 },
-        groq: {
-            'qwen3-32b': { chars: 0, limit: 1500000 },
-            'gpt-oss-120b': { chars: 0, limit: 600000 },
-            'gpt-oss-20b': { chars: 0, limit: 600000 },
-            'kimi-k2-instruct': { chars: 0, limit: 600000 }
-        },
-        gemini: {
-            'gemma-4-26b-a4b-it': { chars: 0 }
-        }
-    };
-    limits.data.push(newEntry);
-    setLimits(limits);
-
-    return newEntry;
-}
-
-function incrementLimitCount(model) {
-    const limits = getLimits();
-    const today = getTodayDateString();
-
-    // Find or create today's entry
-    let todayEntry = limits.data.find(entry => entry.date === today);
-
-    if (!todayEntry) {
-        // Clean old entries and create new one
-        limits.data = [];
-        todayEntry = {
-            date: today,
-            flash: { count: 0 },
-            flashLite: { count: 0 }
-        };
-        limits.data.push(todayEntry);
-    } else {
-        // Clean old entries, keep only today
-        limits.data = limits.data.filter(entry => entry.date === today);
-    }
-
-    // Increment the appropriate model count
-    if (model === 'gemini-2.5-flash') {
-        todayEntry.flash.count++;
-    } else if (model === 'gemini-2.5-flash-lite') {
-        todayEntry.flashLite.count++;
-    }
-
-    setLimits(limits);
-    return todayEntry;
-}
-
-function incrementCharUsage(provider, model, charCount) {
-    getTodayLimits();
-
-    const limits = getLimits();
-    const today = getTodayDateString();
-    const todayEntry = limits.data.find(entry => entry.date === today);
-
-    if(todayEntry[provider] && todayEntry[provider][model]) {
-        todayEntry[provider][model].chars += charCount;
-        setLimits(limits);
-    }
-
-    return todayEntry;
-}
-
-function getAvailableModel() {
-    const todayLimits = getTodayLimits();
-
-    // RPD limits: flash = 20, flash-lite = 20
-    // After both exhausted, fall back to flash (for paid API users)
-    if (todayLimits.flash.count < 20) {
-        return 'gemini-2.5-flash';
-    } else if (todayLimits.flashLite.count < 20) {
-        return 'gemini-2.5-flash-lite';
-    }
-
-    return 'gemini-2.5-flash'; // Default to flash for paid API users
-}
-
-function getModelForToday() {
-    const todayEntry = getTodayLimits();
-    const groq = todayEntry.groq;
-
-    if (groq['qwen3-32b'].chars < groq['qwen3-32b'].limit) {
-        return 'qwen/qwen3-32b';
-    }
-    if (groq['gpt-oss-120b'].chars < groq['gpt-oss-120b'].limit) {
-        return 'openai/gpt-oss-120b';
-    }
-    if (groq['gpt-oss-20b'].chars < groq['gpt-oss-20b'].limit) {
-        return 'openai/gpt-oss-20b';
-    }
-    if (groq['kimi-k2-instruct'].chars < groq['kimi-k2-instruct'].limit) {
-        return 'moonshotai/kimi-k2-instruct';
-    }
-
-    // All limits exhausted
-    return null;
 }
 
 // ============ HISTORY ============
@@ -497,28 +318,11 @@ module.exports = {
     // Credentials
     getCredentials,
     setCredentials,
-    getApiKey,
-    setApiKey,
-    getGroqApiKey,
-    setGroqApiKey,
 
     // Preferences
     getPreferences,
     setPreferences,
     updatePreference,
-
-    // Keybinds
-    getKeybinds,
-    setKeybinds,
-
-    // Limits (Rate Limiting)
-    getLimits,
-    setLimits,
-    getTodayLimits,
-    incrementLimitCount,
-    getAvailableModel,
-    incrementCharUsage,
-    getModelForToday,
 
     // History
     saveSession,
